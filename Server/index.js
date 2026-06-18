@@ -13,9 +13,6 @@ const app = express();
 
 
 
-
-
-
 app.get("/health", (req, res) => {
   res.send("Server running");
 });

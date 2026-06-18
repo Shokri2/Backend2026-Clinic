@@ -29,7 +29,7 @@ const userschema = mongoose.Schema({
   }
 },
 {
-    timestamp :true
+    timestamps :true
 }
 
 );

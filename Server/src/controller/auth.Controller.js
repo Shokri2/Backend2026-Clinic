@@ -23,7 +23,9 @@ export const register = async (req, res) => {
     }
     //check password validate
     if (passRegex.test(password)) {
-      return res.status(400).json({ message: "password must contain uppercase and lowercase latters" });
+      return res.status(400).json({
+        message: "password must contain uppercase and lowercase latters",
+      });
     }
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (emailRegex.test(email)) {
@@ -34,11 +36,49 @@ export const register = async (req, res) => {
     if (isExist) {
       return res.status(400).json({ message: "email already exist" });
     }
-    const hash_password = await bcrypt.hash(password,10);
+    const hash_password = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, hash_password });
-    return res.status(201).json({message: "created account",user})
+    return res.status(201).json({ message: "created account", user });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      message: "internel server error",
+    });
+  }
+};
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    //input= req.body
+    //validation
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "faill all requierd field",
+      });
+    }
+    const isExist = await User.findOne({ email });
+    if (!isExist) {
+      return res.status(400).json({
+        message: "user not register",
+      });
+    }
+    const ismatch = await bcrypt.compare(password, isExist.hash_password);
+
+    if (!ismatch) {
+      return res.status(400).json({
+        message: "email or passowrd are incorrect",
+      });
+    }
+    return res.status(200).json({
+      message: "login succsesful",
+      user: {
+        name: isExist.name,
+        email: isExist.email,
+        role: isExist.role,
+        createdAT: isExist.createdAT,
+      },
+    });
+  } catch (error) {
     return res.status(500).json({
       message: "internel server error",
     });

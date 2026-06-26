@@ -1,5 +1,6 @@
 import User from "../model/user.Model,js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken"
 // crud
 //create-read-update-delete
 
@@ -69,6 +70,14 @@ export const login = async (req, res) => {
         message: "email or passowrd are incorrect",
       });
     }
+    //generate token
+    const token = jwt.sign({
+      name: isExist.name,
+      email: isExist.email,
+      role: isExist.role,
+      createdAT: isExist.createdAT,
+      id: isExist._id
+    }, process.env.JWT_SECRET,{expiresIn:"30m"});
     return res.status(200).json({
       message: "login succsesful",
       user: {
@@ -76,7 +85,9 @@ export const login = async (req, res) => {
         email: isExist.email,
         role: isExist.role,
         createdAT: isExist.createdAT,
+        id: isExist._id,
       },
+      token,
     });
   } catch (error) {
     return res.status(500).json({

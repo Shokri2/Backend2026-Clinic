@@ -1,19 +1,25 @@
 import express from "express";
-import { deleteUser, getALLUsers, getUserById, updateUser, updateUserRole } from "../controller/user.Controller.js";
+import {
+  deleteUser,
+  getALLUsers,
+  getUserById,
+  updateUser,
+  updateUserRole,
+} from "../controller/user.Controller.js";
 
+const route = express.Router();
 
-const route = express.Router()
+route.get("/all-users", protect, adminOnly, getALLUsers);
 
-route.get('/all-users',getALLUsers)
+route.get("/user/:id", getUserById);
 
-route.get("/user/:id", getUserById)
+route.get("/user-email", getUserByEmail);
 
-route.get("/user-email", getUserByEmail)
+route.delete("/delete-user/:id", protect, deleteUser);
 
-route.delete("/delete-user/:id", deleteUser);
+route.put("/update-user/:id", protect, updateUser);
 
-route.put("/update-user/:id", updateUser);
+route.put("/update-user-role/:id", protect, adminOnly, updateUserRole);
 
-route.put("/update-user-role/:id", updateUserRole);
-
+route.put("/uodate-passowrd", protect, updatePassowrd);
 export default route;

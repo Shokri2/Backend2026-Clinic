@@ -1,4 +1,4 @@
-import User from "../model/user.Model,js";
+import User from "../model/user.Model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
 // crud
@@ -6,8 +6,8 @@ import jwt from "jsonwebtoken"
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, confimpassword } = req.body;
-    if (!name || !email || !password || !confimpassword) {
+    const { name, email, password, confirmpassword } = req.body;
+    if (!name || !email || !password || !confirmpassword) {
       return res.status(400).json({ message: "please fill all fields" });
       //bad req 400
     }
@@ -19,7 +19,7 @@ export const register = async (req, res) => {
     }
     const passRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-    if (password !== confimpassword) {
+    if (password !== confirmpassword) {
       return res.status(400).json({ message: "password not match" });
     }
     //check password validate

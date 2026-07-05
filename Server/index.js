@@ -27,7 +27,7 @@ const port = process.env.PORT;
 app.use("/api", authRoutes);
 app.use("/api", usersRoutes);
 app.use("/api", categoryRoutes);
-
+app.use("/api", menuRoutes);
 app.listen(port, () => {
   console.log(`server running on port ${port}
 link => http://localhost:3000`);

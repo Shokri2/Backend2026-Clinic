@@ -22,23 +22,5 @@ export const useCategories = () => {
     fetchAllCategories();
   }, []);
 
-  const addNewMenuItem = async (menuData) => {
-    try {
-      if (!menuData.name || !menuData.catId || !menuData.price) {
-        toast.error("Please add name, category name, price");
-        return;
-      }
-
-      const res = await api.post("/create-menu", menuData);
-
-      toast.success(res.data.message);
-      await fetchAllMenu();
-
-      console.log(menu);
-    } catch (error) {
-      toast.error(error.response.data.message);
-    }
-  };
-
   return { categories };
 };

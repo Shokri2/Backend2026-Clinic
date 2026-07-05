@@ -6,23 +6,23 @@ import mongoose from "mongoose";
 
 const userschema = mongoose.Schema({
   name: {
-    Type: String,
+    type: String,
     require: true,
     min: 3,
     max: 150,
   },
   email: {
-    Type: String,
+    type: String,
     require: true,
   },
   password: {
-    Type: String,
+    type: String,
     require: true,
     min: 8,
     max: 15,
   },
   role:{
-    Type:String,
+    type:String,
     // user or admin 
     enum:['user','admin'],
     default:"user"

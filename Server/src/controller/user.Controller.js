@@ -103,32 +103,31 @@ export const updateUser = async (req, res) => {
       message: "internel server error",
     });
   }
-  export const getUserByEmail = async (req, res) => {
-    try {
-      const email = req.body;
-      if (!email) {
-        return res.status(400).json({
-          message: "enter a valid email",
-        });
-      }
-      const isExist = await User.findOne({ email });
-      if (!isExist) {
-        return res.status(404).json({
-          message: "user email not found",
-        });
-      }
-      return res.status(200).json({
-        message: "user email  found",
-        isExist,
-      });
-    } catch (error) {
-      return res.status(500).json({
-        message: "internel server error",
+};
+export const getUserByEmail = async (req, res) => {
+  try {
+    const email = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: "enter a valid email",
       });
     }
-  };
+    const isExist = await User.findOne({ email });
+    if (!isExist) {
+      return res.status(404).json({
+        message: "user email not found",
+      });
+    }
+    return res.status(200).json({
+      message: "user email  found",
+      isExist,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "internel server error",
+    });
+  }
 };
-
 export const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -185,27 +184,34 @@ export const updatepass = async (req, res) => {
         });
       }
 
-      const exitUser = await User.findOne({_id: id})
+      const exitUser = await User.findOne({ _id: id });
       if (!exitUser) {
         return res.status(404).json({
           message: "user not found",
         });
       }
-      const isMatch = await bcrypt.compare(newPassowrd ,existUser.hash_passowrd)
-      if(isMatch){
-  return res.status(400).json({
-      message: "new passowrd cant be the old passowrd"
-    });
+      const isMatch = await bcrypt.compare(
+        newPassowrd,
+        existUser.hash_passowrd,
+      );
+      if (isMatch) {
+        return res.status(400).json({
+          message: "new passowrd cant be the old passowrd",
+        });
       }
-      const hash_passowrd = await bcrypt.hash(newpassowrd,10);
-      const newUser= await User.findByIdAndUpdate(id,{hash_passowrd},{new:true})
+      const hash_passowrd = await bcrypt.hash(newpassowrd, 10);
+      const newUser = await User.findByIdAndUpdate(
+        id,
+        { hash_passowrd },
+        { new: true },
+      );
     }
     return res.status(200).json({
-      message: "user passowrd update",user:newUser
+      message: "user passowrd update",
+      user: newUser,
     });
-  } 
-  catch (error) {
-     return res.status(500).json({
+  } catch (error) {
+    return res.status(500).json({
       message: "internel server error",
     });
   }

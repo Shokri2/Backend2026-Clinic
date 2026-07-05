@@ -1,15 +1,12 @@
-import {
-  Box,
-  AppBar,
- 
-  ListItemButton,
-  Toolbar,
-  List,
-} from "@mui/material";
+import { Box, AppBar, ListItemButton, Toolbar, List } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import { useContext } from "react";
+import { useAuth } from "../../Hooks/UseAuth";
+import { UserContext } from "../../Context/UserContext";
 export default function Header() {
-    const navigate =useNavigate()
+  const { currentUser } = useContext(UserContext);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   return (
     <>
       <AppBar position="static">
@@ -24,7 +21,9 @@ export default function Header() {
             flexWrap: { xs: "wrap", sm: "wrap", md: "nowrap", lg: "nowrap" },
           }}
         >
-          <Box>logo</Box>
+          <Box>
+            <Typography variant="h2">Logo</Typography>
+          </Box>
           <List
             sx={{
               display: "flex",
@@ -37,10 +36,22 @@ export default function Header() {
             <ListItemButton onClick={() => navigate("/")}>Home</ListItemButton>
             <ListItemButton>About</ListItemButton>
             <ListItemButton>Contact</ListItemButton>
-            <ListItemButton>Login</ListItemButton>
-            <ListItemButton onClick={() => navigate("/create-account")}>
-              Register
-            </ListItemButton>
+            
+
+            {!currentUser || Object.keys(currentUser).length === 0 ? (
+              <>
+                <ListItemButton onClick={() => navigate("/login")}>
+                  Login
+                </ListItemButton>
+                <ListItemButton onClick={() => navigate("/create-account")}>
+                  Register
+                </ListItemButton>
+              </>
+            ) : (
+              <>
+                <ListItemButton onClick={() => logout()}>Logout</ListItemButton>
+              </>
+            )}
           </List>
         </Toolbar>
       </AppBar>

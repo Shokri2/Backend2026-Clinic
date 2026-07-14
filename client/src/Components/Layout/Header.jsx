@@ -1,4 +1,14 @@
-import { Box, AppBar, ListItemButton, Toolbar, List } from "@mui/material";
+import {
+  Box,
+  AppBar,
+  ListItemButton,
+  Toolbar,
+  List,
+  Typography,
+} from "@mui/material";
+import "@fontsource/poppins";
+import "@fontsource/poppins/700.css";
+import logo from "../../assets/loog.png";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { useAuth } from "../../Hooks/UseAuth";
@@ -15,14 +25,35 @@ export default function Header() {
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
-            p: 2,
-            m: 2,
+            py: 2,
+            bgcolor: "white",
+            color: "black",
             alignItems: "center",
+            fontFamily: "Poppins",
+
             flexWrap: { xs: "wrap", sm: "wrap", md: "nowrap", lg: "nowrap" },
           }}
         >
-          <Box>
-            <Typography variant="h2">Logo</Typography>
+          <Box
+            sx={{
+              justifyContent: "center",
+              gap: 2,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src={logo}
+              alt="Logo"
+              style={{
+                width: "60px",
+                height: "45px",
+                borderRadius: "50%",
+              }}
+            />
+            <Typography sx={{ fontWeight: 550 }} variant="h6">
+              Clinic Jo
+            </Typography>
           </Box>
           <List
             sx={{
@@ -34,17 +65,53 @@ export default function Header() {
             }}
           >
             <ListItemButton onClick={() => navigate("/")}>Home</ListItemButton>
-            <ListItemButton>About</ListItemButton>
-            <ListItemButton>Contact</ListItemButton>
-            
-
+            <ListItemButton onClick={() => navigate("/About")}>About</ListItemButton>
+            <ListItemButton >Services</ListItemButton>
+            <ListItemButton>Doctors</ListItemButton>
+          </List>
+          <List
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              gap: 2,
+              flexWrap: { xs: "wrap", sm: "wrap", md: "nowrap", lg: "nowrap" },
+            }}
+          >
             {!currentUser || Object.keys(currentUser).length === 0 ? (
               <>
-                <ListItemButton onClick={() => navigate("/login")}>
-                  Login
+                <ListItemButton
+                  variant="outlined"
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: "10px",
+                    px: 3,
+                    py: 1,
+
+                    borderColor: "#2563EB",
+                    color: "#2563EB",
+                    "&:hover": {
+                      borderColor: "#1D4ED8",
+                      backgroundColor: "#EFF6FF",
+                    },
+                  }}
+                  onClick={() => navigate("/login")}
+                >
+                  Sign In
                 </ListItemButton>
-                <ListItemButton onClick={() => navigate("/create-account")}>
-                  Register
+                <ListItemButton
+                  variant="contained"
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: "10px",
+                    px: 3,
+                    py: 1,
+                    color: "#545555",
+                    background: "#e3e7f2",
+                  }}
+                  onClick={() => navigate("/create-account")}
+                >
+                  Sign Up
                 </ListItemButton>
               </>
             ) : (

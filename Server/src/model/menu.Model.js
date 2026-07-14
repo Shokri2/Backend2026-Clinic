@@ -8,14 +8,14 @@ const menuSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
     },
     description: {
       type: String,
     },
     price: {
       type: Number,
-      require: true,
+      required: true,
       min: 1,
       default: 1,
     },
@@ -26,7 +26,7 @@ const menuSchema = mongoose.Schema(
     catId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      require: true,
+      required: true,
     },
     image: {
       type: String,

@@ -1,4 +1,4 @@
-import User from "../model/user.Model.js";
+import User from "../model/auth.Model.js"
 import bcrypt from "bcrypt";
 // crud
 //create-read-update-delete

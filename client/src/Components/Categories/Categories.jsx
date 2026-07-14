@@ -6,7 +6,7 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-import { useCategories } from "../../Hooks/useCategories";
+import { useCategories } from "../../Hooks/useCategory";
 
 export default function Categories() {
   const { categories } = useCategories();

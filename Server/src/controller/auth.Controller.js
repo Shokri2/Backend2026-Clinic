@@ -1,6 +1,6 @@
-import User from "../model/menu.Model.js";
+import User from "../model/auth.Model.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 // crud
 //create-read-update-delete
 
@@ -28,10 +28,11 @@ export const register = async (req, res) => {
         message: "password must contain uppercase and lowercase latters",
       });
     }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (emailRegex.test(email)) {
-      return res.status(400).json({ message: "email should be valid" });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "email should be valid email" });
     }
+
     //check email
     const isExist = await User.findOne({ email });
     if (isExist) {
@@ -71,13 +72,17 @@ export const login = async (req, res) => {
       });
     }
     //generate token
-    const token = jwt.sign({
-      name: isExist.name,
-      email: isExist.email,
-      role: isExist.role,
-      createdAT: isExist.createdAT,
-      id: isExist._id
-    }, process.env.JWT_SECRET,{expiresIn:"30m"});
+    const token = jwt.sign(
+      {
+        name: isExist.name,
+        email: isExist.email,
+        role: isExist.role,
+        createdAT: isExist.createdAT,
+        id: isExist._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30m" },
+    );
     return res.status(200).json({
       message: "login succsesful",
       user: {

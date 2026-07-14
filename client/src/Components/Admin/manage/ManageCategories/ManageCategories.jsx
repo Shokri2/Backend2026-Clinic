@@ -10,7 +10,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useCategories } from "../../../../Hooks/useCategories";
+import { useCategories } from "../../../../Hooks/useCategory.js";
 export default function ManageCategories() {
   const { categories } = useCategories();
   return (

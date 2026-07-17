@@ -1,6 +1,7 @@
 import express from "express";
 import {
   deleteUser,
+  getAllEmployess,
   getALLUsers,
   getUserByEmail,
   getUserById,
@@ -26,4 +27,5 @@ route.put("/update-user/:id", protect, updateUser);
 route.put("/update-user-role/:id", protect, adminOnly, updateUserRole);
 
 route.put("/uodate-passowrd", protect, updatepass);
+route.get("/all-employees", protect, adminOnly, getAllEmployess);
 export default route;

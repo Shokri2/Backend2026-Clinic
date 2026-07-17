@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import usersRoutes from "./src/router/users.Routes.js";
 import categoryRoutes from "./src/router/category.Routes.js";
 import menuRoutes from "./src/router/menue.Routes.js";
+import shiftRoutes from "./src/routes/shifts.Routes.js";
 import cors from "cors";
 dotenv.config();
 const app = express();
@@ -29,6 +30,7 @@ app.use("/api", authRoutes);
 app.use("/api", usersRoutes);
 app.use("/api", categoryRoutes);
 app.use("/api", menuRoutes);
+app.use("/api", shiftRoutes);
 app.listen(port, () => {
   console.log(`server running on port ${port}
 link => http://localhost:3000`);

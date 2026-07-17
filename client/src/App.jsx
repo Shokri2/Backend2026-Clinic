@@ -11,7 +11,9 @@ import ManageMenu from "./Components/Admin/manage/ManageMenu/ManageMenu.jsx";
 import AdminDashboard from "./Components/Admin/AdminDashboard.jsx";
 import ManageCategories from "./Components/Admin/manage/ManageCategories/ManageCategories.jsx";
 import About from "./Components/About/About.jsx";
-
+import EmployeeLayout from "./Components/Employee/EmployeeLayout.jsx";
+import EmployeeDashboard from "./Components/Employee/EmployeeDashboard.jsx";
+import ManageShifts from "./Components/Admin/manage/ManageShifts/ManageShifts.jsx";
 function App() {
   return (
     <>
@@ -26,6 +28,12 @@ function App() {
           <Route path="manage-users" element={<ManageUsers />} />
           <Route path="manage-menu" element={<ManageMenu />} />
           <Route path="manage-categories" element={<ManageCategories />} />
+          <Route path="manage-shifts" element={<ManageShifts />} />
+        </Route>
+
+        {/* employee */}
+        <Route path="/employee" element={<EmployeeLayout />}>
+          <Route index path="dashboard" element={<EmployeeDashboard />} />
         </Route>
       </Routes>
     </>

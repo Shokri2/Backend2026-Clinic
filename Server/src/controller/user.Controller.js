@@ -20,6 +20,19 @@ export const getALLUsers = async (req, res) => {
     });
   }
 };
+export const getAllEmployess = async (req, res) => {
+  try {
+    const users = await User.find({ role: "employee" }).select(
+      "-hashed_password",
+    );
+    if (users.length === 0) {
+      return res.status(200).json({ message: "no users yet", users: [] });
+    }
+    return res.status(200).json({ message: "users found", users });
+  } catch (error) {
+    return res.status(500).json({ message: "internal server error" });
+  }
+};
 export const getUserById = async (req, res) => {
   try {
     const UserId = req.params.id;

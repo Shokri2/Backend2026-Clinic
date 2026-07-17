@@ -49,6 +49,8 @@ export const useAuth = () => {
         navigate("/home");
       } else if (user.role === "admin") {
         navigate("/admin/dashboard");
+      } else if (user.role === "employee") {
+        navigate("/employee/dashboard");
       }
       setCurrentUser(user);
     } catch (error) {

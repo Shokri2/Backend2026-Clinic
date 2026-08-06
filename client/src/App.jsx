@@ -11,14 +11,18 @@ import ManageMenu from "./Components/Admin/manage/ManageMenu/ManageMenu.jsx";
 import AdminDashboard from "./Components/Admin/AdminDashboard.jsx";
 import ManageCategories from "./Components/Admin/manage/ManageCategories/ManageCategories.jsx";
 import About from "./Components/About/About.jsx";
+import Doctors from "./Components/Doctors/Doctors.jsx";
 import EmployeeLayout from "./Components/Employee/EmployeeLayout.jsx";
 import EmployeeDashboard from "./Components/Employee/EmployeeDashboard.jsx";
 import ManageShifts from "./Components/Admin/manage/ManageShifts/ManageShifts.jsx";
+import Services from "./Components/service/Services";
 function App() {
   return (
     <>
       <Routes>
         <Route path="/About" element={<About />} />
+        <Route path="/Doctors" element={<Doctors />} />
+        <Route path="/services" element={<Services />} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/create-account" element={<Register />} />
         <Route path="/login" element={<Login />} />

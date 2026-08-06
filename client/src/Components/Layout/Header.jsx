@@ -65,9 +65,15 @@ export default function Header() {
             }}
           >
             <ListItemButton onClick={() => navigate("/")}>Home</ListItemButton>
-            <ListItemButton onClick={() => navigate("/About")}>About</ListItemButton>
-            <ListItemButton >Services</ListItemButton>
-            <ListItemButton>Doctors</ListItemButton>
+            <ListItemButton onClick={() => navigate("/About")}>
+              About
+            </ListItemButton>
+            <ListItemButton onClick={() => navigate("/services")}>
+              Services
+            </ListItemButton>
+            <ListItemButton onClick={() => navigate("/Doctors")}>
+              Doctors
+            </ListItemButton>
           </List>
           <List
             sx={{

@@ -6,28 +6,29 @@ import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, confirmpassword } = req.body;
-    if (!name || !email || !password || !confirmpassword) {
-      return res.status(400).json({ message: "please fill all fields" });
+   const { name, email, password, confirmPassword } = req.body;
+   if (!name || !email || !password || !confirmPassword) {
+  return res.status(400).json({ message: "please fill all fields" });
+
       //bad req 400
     }
     //check name validate
-    if (name.length > 3) {
-      return res
-        .status(400)
-        .json({ message: "name should be mor than 3 char" });
+    if (name.length < 3) {
+      return res.status(400).json({
+        message: "name should be more than 3 char",
+      });
     }
     const passRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-    if (password !== confirmpassword) {
+    if (password !== confirmPassword) {
       return res.status(400).json({ message: "password not match" });
     }
     //check password validate
-    if (passRegex.test(password)) {
-      return res.status(400).json({
-        message: "password must contain uppercase and lowercase latters",
-      });
-    }
+   if (password.length < 6) {
+     return res.status(400).json({
+       message: "password must be at least 6 characters",
+     });
+   }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "email should be valid email" });

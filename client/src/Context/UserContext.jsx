@@ -12,7 +12,7 @@ export default function UserProvider({ children }) {
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
-      
+      //   srote again
     } else {
       localStorage.removeItem("currentUser");
     }

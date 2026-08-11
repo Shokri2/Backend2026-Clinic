@@ -5,17 +5,19 @@ import {
   Grid,
   Card,
   CardMedia,
-  CardContent,
   TextField,
   Button,
 } from "@mui/material";
+
 import { useState } from "react";
+
 import banner from "../../assets/About.png";
 import story1 from "../../assets/story1.png";
 import story2 from "../../assets/story2.png";
 import story3 from "../../assets/story3.png";
-import Header from "../../Components/Layout/Header"
+
 import Footer from "../Layout/Footer";
+
 export default function About() {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -43,10 +45,10 @@ export default function About() {
       message: "",
     });
   };
+
   return (
     <>
-      <Header />
-      {/* Banner */}
+      {/* ================= BANNER ================= */}
 
       <Box
         sx={{
@@ -64,7 +66,6 @@ export default function About() {
           sx={{
             position: "absolute",
             inset: 0,
-
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -76,7 +77,7 @@ export default function About() {
         </Box>
       </Box>
 
-      {/* Story */}
+      {/* ================= STORY ================= */}
 
       <Container sx={{ py: 8 }}>
         <Typography variant="h3" fontWeight="bold" align="center" gutterBottom>
@@ -100,7 +101,8 @@ export default function About() {
           comfortable environment
         </Typography>
 
-        {/* Cards */}
+        {/* ================= CARDS ================= */}
+
         <Grid container spacing={2} sx={{ mx: 2.2 }}>
           {[{ img: story1 }, { img: story3 }, { img: story2 }].map(
             (item, index) => (
@@ -131,9 +133,7 @@ export default function About() {
         </Grid>
       </Container>
 
-      {/* Contact */}
-
-      {/* Contact */}
+      {/* ================= CONTACT ================= */}
 
       <Box
         sx={{
@@ -148,7 +148,7 @@ export default function About() {
             alignItems="flex-start"
             justifyContent="space-between"
           >
-            {/* Left Side */}
+            {/* ================= LEFT SIDE ================= */}
 
             <Grid size={{ xs: 12, md: 5 }}>
               <Typography variant="h3" fontWeight="bold" sx={{ mb: 3 }}>
@@ -166,6 +166,8 @@ export default function About() {
                 We are here to help you with your healthcare needs. Feel free to
                 reach out anytime.
               </Typography>
+
+              {/* PHONE */}
 
               <Box
                 sx={{
@@ -185,6 +187,8 @@ export default function About() {
 
                 <Typography sx={{ mt: 1 }}>+962 7 9000 0000</Typography>
               </Box>
+
+              {/* EMAIL */}
 
               <Box
                 sx={{
@@ -207,6 +211,8 @@ export default function About() {
                 </Typography>
               </Box>
 
+              {/* ADDRESS */}
+
               <Box
                 sx={{
                   display: "flex",
@@ -227,7 +233,7 @@ export default function About() {
               </Box>
             </Grid>
 
-            {/* Right Side */}
+            {/* ================= RIGHT SIDE ================= */}
 
             <Grid size={{ xs: 12, md: 7 }}>
               <Box
@@ -238,6 +244,8 @@ export default function About() {
                 }}
               >
                 <Grid container spacing={3}>
+                  {/* FULL NAME */}
+
                   <Grid size={12}>
                     <TextField
                       fullWidth
@@ -247,6 +255,8 @@ export default function About() {
                       onChange={handleChange}
                     />
                   </Grid>
+
+                  {/* EMAIL */}
 
                   <Grid size={12}>
                     <TextField
@@ -258,6 +268,8 @@ export default function About() {
                     />
                   </Grid>
 
+                  {/* PHONE */}
+
                   <Grid size={12}>
                     <TextField
                       fullWidth
@@ -268,6 +280,8 @@ export default function About() {
                     />
                   </Grid>
 
+                  {/* SUBJECT */}
+
                   <Grid size={12}>
                     <TextField
                       fullWidth
@@ -277,6 +291,8 @@ export default function About() {
                       onChange={handleChange}
                     />
                   </Grid>
+
+                  {/* MESSAGE */}
 
                   <Grid size={12}>
                     <TextField
@@ -289,6 +305,8 @@ export default function About() {
                       onChange={handleChange}
                     />
                   </Grid>
+
+                  {/* SEND BUTTON */}
 
                   <Grid size={12}>
                     <Button
@@ -313,6 +331,9 @@ export default function About() {
           </Grid>
         </Container>
       </Box>
+
+      {/* ================= FOOTER ================= */}
+
       <Footer />
     </>
   );

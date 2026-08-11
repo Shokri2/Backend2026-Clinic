@@ -6,30 +6,36 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import { useAuth } from "../../Hooks/useAuth";
-import Header from "../../Components/Layout/Header"
 import Footer from "../../Components/Layout/Footer";
+
 import loginn from "../../assets/login.png";
 import login1 from "../../assets/login1.png";
+
 import { useState } from "react";
+
 export default function Login() {
   const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
   const handleLogin = () => {
     console.log(formData);
+
     login(formData);
+
     setFormData({
       email: "",
       password: "",
     });
   };
+
   return (
     <>
-      <Header />
-
       <Box
         sx={{
           minHeight: "100vh",
@@ -60,14 +66,12 @@ export default function Login() {
               overflow: "hidden",
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
-              bgcolor: "#5dbce4eb",
-
-              // اختياري حتى يكون الصندوق أوضح فوق الخلفية
               bgcolor: "",
               backdropFilter: "blur(4px)",
             }}
           >
             {/* Left Side */}
+
             <Box
               sx={{
                 flex: 1,
@@ -110,6 +114,7 @@ export default function Login() {
             </Box>
 
             {/* Right Side */}
+
             <Box
               sx={{
                 flex: 1.4,

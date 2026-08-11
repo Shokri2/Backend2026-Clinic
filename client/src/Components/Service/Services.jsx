@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -9,30 +10,49 @@ import {
   Grid,
   Container,
   Box,
+  Button,
 } from "@mui/material";
 
-import Header from "../../Components/Layout/Header";
 import servicesBg from "../../assets/servicesBg.png";
 
 export default function Services() {
   const [services, setServices] = useState([]);
 
+  const navigate = useNavigate();
+
+  // ================= GET SERVICES =================
+
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/services")
-      .then((res) => {
+    const getServices = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/api/services");
+
         setServices(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    getServices();
   }, []);
+
+  // ================= BOOK SERVICE =================
+
+  const handleBooking = (serviceId) => {
+    const user = localStorage.getItem("currentUser");
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    navigate(`/user/booking/${serviceId}`);
+  };
 
   return (
     <>
-      <Header />
+      {/* ================= HERO SECTION ================= */}
 
-      {/* Hero Section */}
       <Box
         sx={{
           height: "550px",
@@ -43,7 +63,8 @@ export default function Services() {
           alignItems: "center",
         }}
       >
-        {/* Image */}
+        {/* Background Image */}
+
         <Box
           component="img"
           src={servicesBg}
@@ -68,6 +89,7 @@ export default function Services() {
         />
 
         {/* Overlay */}
+
         <Box
           sx={{
             position: "absolute",
@@ -77,6 +99,7 @@ export default function Services() {
         />
 
         {/* Title */}
+
         <Typography
           variant="h2"
           sx={{
@@ -92,7 +115,8 @@ export default function Services() {
         </Typography>
       </Box>
 
-      {/* Services Cards */}
+      {/* ================= SERVICES CARDS ================= */}
+
       <Container
         sx={{
           mt: 6,
@@ -116,7 +140,6 @@ export default function Services() {
                   flexDirection: "column",
                   borderRadius: 3,
                   boxShadow: 3,
-
                   transition: "0.3s",
 
                   "&:hover": {
@@ -125,10 +148,12 @@ export default function Services() {
                   },
                 }}
               >
+                {/* Service Image */}
+
                 <CardMedia
                   component="img"
                   height="200"
-                  image={`http://localhost:3000${service.image}`}
+                  image={`http://localhost:3000/uploads/${service.image}`}
                   alt={service.title}
                   sx={{
                     objectFit: "cover",
@@ -141,33 +166,62 @@ export default function Services() {
                     flexGrow: 1,
                   }}
                 >
+                  {/* Service Title */}
+
                   <Typography
                     variant="h5"
                     sx={{
                       fontWeight: 700,
                       mb: 2,
+                      fontFamily: "Poppins",
                     }}
                   >
                     {service.title}
                   </Typography>
 
+                  {/* Description */}
+
                   <Typography
                     color="text.secondary"
                     sx={{
                       minHeight: "50px",
+                      fontFamily: "Poppins",
                     }}
                   >
                     {service.description}
                   </Typography>
 
+                  {/* Price */}
+
                   <Typography
                     sx={{
                       mt: 2,
                       fontWeight: 600,
+                      fontFamily: "Poppins",
                     }}
                   >
                     Price: ${service.price}
                   </Typography>
+
+                  {/* Book & Pay */}
+
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={() => handleBooking(service._id)}
+                    sx={{
+                      mt: 3,
+                      backgroundColor: "#16704f",
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+
+                      "&:hover": {
+                        backgroundColor: "#10583e",
+                      },
+                    }}
+                  >
+                    Book & Pay
+                  </Button>
                 </CardContent>
               </Card>
             </Grid>

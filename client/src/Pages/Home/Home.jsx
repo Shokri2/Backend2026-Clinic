@@ -1,20 +1,26 @@
+
 import { Container, Typography, Stack, Box, Button } from "@mui/material";
 import { useContext } from "react";
 import { UserContext } from "../../Context/UserContext";
+import { useNavigate } from "react-router-dom";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-// swiper image
+
+// swiper images
 import hero1 from "../../assets/hero1.png";
 import hero3 from "../../assets/hero3.png";
 import hero4 from "../../assets/hero4.png";
 import hero5 from "../../assets/hero5.png";
+
 // whyChooseUs
 import whyChooseUs from "../../assets/whyChooseUs.png";
-// steps image
+
+// steps images
 import step1 from "../../assets/step1.png";
 import step2 from "../../assets/step2.png";
 import step3 from "../../assets/step3.png";
@@ -42,8 +48,11 @@ const slides = [
 export default function Home() {
   const { currentUser } = useContext(UserContext);
 
+  const navigate = useNavigate();
+
   return (
     <>
+      {/* Hero Slider */}
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         navigation
@@ -65,47 +74,52 @@ export default function Home() {
                 alignItems: "center",
               }}
             >
-              <Container maxWidth="xl">
+              <Container>
                 <Box
                   sx={{
                     maxWidth: 600,
                     color: "#fff",
                   }}
                 >
-                  <Typography
-                    variant="h2"
-                    fontWeight="bold"
-                    sx={{
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {slide.title}
-                  </Typography>
+                  {slide.title && (
+                    <Typography
+                      variant="h2"
+                      fontWeight="bold"
+                      sx={{
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {slide.title}
+                    </Typography>
+                  )}
 
-                  <Typography
-                    sx={{
-                      mt: 3,
-                      fontSize: 18,
-                      lineHeight: 1.8,
-                      width: "90%",
-                    }}
-                  >
-                    {slide.desc}
-                  </Typography>
+                  {slide.desc && (
+                    <Typography
+                      sx={{
+                        mt: 3,
+                        fontSize: 18,
+                        lineHeight: 1.8,
+                        width: "90%",
+                      }}
+                    >
+                      {slide.desc}
+                    </Typography>
+                  )}
 
                   {slide.showButtons && (
                     <Stack
                       direction="row"
                       spacing={2}
-                      mt={5}
                       sx={{
                         mt: 37,
                         mx: 5,
                       }}
                     >
+                      {/* Book Appointment */}
                       <Button
                         variant="contained"
                         size="small"
+                        onClick={() => navigate("/doctors")}
                         sx={{
                           px: 3,
                           py: 1.5,
@@ -115,9 +129,11 @@ export default function Home() {
                         Book Appointment
                       </Button>
 
+                      {/* Our Services */}
                       <Button
                         variant="outlined"
                         size="large"
+                        onClick={() => navigate("/services")}
                         sx={{
                           px: 4,
                           py: 1.5,
@@ -140,14 +156,27 @@ export default function Home() {
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* Why Choose Us */}
       <Box
         sx={{
           py: 8,
           bgcolor: "#fff",
         }}
       >
-        <Box sx={{ width: "100%", color: "#1b1c1b", mt: 7 }}>
-          <Typography variant="h3" fontWeight="bold" textAlign="center" mb={6}>
+        <Box
+          sx={{
+            width: "100%",
+            color: "#1b1c1b",
+            mt: 7,
+          }}
+        >
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            textAlign="center"
+            mb={6}
+          >
             Why Choose Us
           </Typography>
 
@@ -166,6 +195,8 @@ export default function Home() {
           />
         </Box>
       </Box>
+
+      {/* How It Works */}
       <Box
         sx={{
           py: 10,
@@ -173,7 +204,14 @@ export default function Home() {
         }}
       >
         <Container maxWidth="xl">
-          <Typography variant="h3" fontWeight="bold" textAlign="center" sx={{color:"black"}} >
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            textAlign="center"
+            sx={{
+              color: "black",
+            }}
+          >
             How It Works
           </Typography>
 
@@ -237,7 +275,10 @@ export default function Home() {
                 {/* Image */}
                 <Box
                   component="img"
-                  src={[step1, step2, step3, step4, step5, step6][step - 1]}
+                  src={[step1, step2, step3, step4, step5, step6][
+                    step - 1
+                  ]}
+                  alt={`Step ${step}`}
                   sx={{
                     width: 220,
                     height: 220,
@@ -247,7 +288,11 @@ export default function Home() {
                 />
 
                 {/* Title */}
-                <Typography variant="h5" fontWeight="bold" mb={2}>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  mb={2}
+                >
                   {
                     [
                       "Create Account",
@@ -283,7 +328,7 @@ export default function Home() {
           </Box>
         </Container>
       </Box>
-     
     </>
   );
 }
+

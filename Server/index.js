@@ -8,6 +8,8 @@ import categoryRoutes from "./src/router/category.Routes.js";
 import menuRoutes from "./src/router/menue.Routes.js";
 import service from "./src/router/service.Routes.js";
 import doctorRoutes from "./src/router/doctors.Routes.js";
+import bookingRoutes from "./src/router/booking.Routes.js";
+import appointmentRoutes from "./src/router/appointment.Routes.js";
 import path from "path";
 import cors from "cors";
 dotenv.config();
@@ -35,6 +37,8 @@ app.use("/api", categoryRoutes);
 app.use("/api", menuRoutes);
 app.use("/api", service);
 app.use("/api", doctorRoutes);
+app.use("/api", bookingRoutes);
+app.use("/api", appointmentRoutes);
 app.listen(port, () => {
   console.log(`server running on port ${port}
 link => http://localhost:3000`);

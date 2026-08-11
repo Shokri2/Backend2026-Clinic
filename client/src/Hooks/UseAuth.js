@@ -28,15 +28,11 @@ export const useAuth = () => {
 
       const res = await api.post("/auth/register", formData);
 
-      console.log("Register response:", res.data);
-
       toast.success(res.data.message || "Account Created!");
 
-      // بعد التسجيل يروح لصفحة Login
+      // بعد التسجيل ينتقل إلى صفحة Login
       navigate("/login");
     } catch (error) {
-      console.log("REGISTER ERROR:", error.response?.data);
-
       toast.error(error.response?.data?.message || "Register failed");
     }
   };
@@ -52,16 +48,16 @@ export const useAuth = () => {
       const res = await api.post("/auth/login", formData);
 
       const { user, token } = res.data;
-
+      console.log("USER ROLE:", user.role);
+      console.log("USER:", user);
       localStorage.setItem("token", token);
       localStorage.setItem("currentUser", JSON.stringify(user));
 
-      console.log(user.role);
-
       toast.success(res.data.message || "Login Successfully");
 
+      // تحديد الصفحة حسب صلاحية المستخدم
       if (user.role === "user") {
-        navigate("/home");
+        navigate("/user/dashboard");
       } else if (user.role === "admin") {
         navigate("/admin/dashboard");
       } else if (user.role === "employee") {
@@ -70,8 +66,6 @@ export const useAuth = () => {
 
       setCurrentUser(user);
     } catch (error) {
-      console.log("LOGIN ERROR:", error.response?.data);
-
       toast.error(error.response?.data?.message || "Login failed");
     }
   };
@@ -88,8 +82,6 @@ export const useAuth = () => {
 
       navigate("/");
     } catch (error) {
-      console.log("LOGOUT ERROR:", error);
-
       toast.error("Logout failed");
     }
   };

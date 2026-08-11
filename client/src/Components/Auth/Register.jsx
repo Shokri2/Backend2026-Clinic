@@ -6,20 +6,24 @@ import {
   Typography,
   Box,
 } from "@mui/material";
+
 import { useState } from "react";
 import { useAuth } from "../../Hooks/UseAuth";
-import Header from "../Layout/Header";
 import registerBg from "../../assets/registerBg.png";
+
 export default function Register() {
   const { register } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+
   const handleRegister = () => {
     register(formData);
+
     setFormData({
       name: "",
       email: "",
@@ -27,10 +31,9 @@ export default function Register() {
       confirmPassword: "",
     });
   };
+
   return (
     <>
-      <Header />
-
       <Box
         sx={{
           minHeight: "100vh",

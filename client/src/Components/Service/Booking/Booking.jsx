@@ -155,6 +155,18 @@ export default function Booking() {
     }
 
     // -----------------------------------------------------
+    // CHECK TOKEN
+    // -----------------------------------------------------
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("Please login again");
+      navigate("/login");
+      return;
+    }
+
+    // -----------------------------------------------------
     // CHECK DATE
     // -----------------------------------------------------
 
@@ -216,13 +228,15 @@ export default function Booking() {
 
       // ===================================================
       // DOCTOR BOOKING
-      // =====================================================
+      // ===================================================
 
       if (doctor) {
         appointmentData.doctor = doctor._id;
       }
 
       console.log("=================================");
+      console.log("TOKEN EXISTS:", !!token);
+      console.log("USER ID:", userId);
       console.log("SENDING APPOINTMENT:");
       console.log(appointmentData);
       console.log("=================================");
@@ -234,6 +248,11 @@ export default function Booking() {
       const response = await axios.post(
         "http://localhost:3000/api/appointments",
         appointmentData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       console.log("Appointment created:", response.data);
@@ -246,14 +265,25 @@ export default function Booking() {
 
       // ===================================================
       // DASHBOARD
-      // =====================================================
+      // ===================================================
 
       navigate("/user/dashboard");
     } catch (error) {
       console.error("=================================");
       console.error("BOOKING ERROR:", error);
       console.error("BACKEND ERROR:", error.response?.data);
+      console.error("STATUS:", error.response?.status);
       console.error("=================================");
+
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+
+        localStorage.removeItem("token");
+
+        navigate("/login");
+
+        return;
+      }
 
       toast.error(
         error.response?.data?.message || "Failed to book appointment",
@@ -377,7 +407,7 @@ export default function Booking() {
         backgroundAttachment: "fixed",
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="sm">
         <Paper
           elevation={6}
           sx={{
@@ -748,7 +778,12 @@ export default function Booking() {
                     mt: 2,
                   }}
                 >
-                  <Typography fontWeight={600} sx={{ fontFamily: "Poppins" }}>
+                  <Typography
+                    fontWeight={600}
+                    sx={{
+                      fontFamily: "Poppins",
+                    }}
+                  >
                     Appointment Fee
                   </Typography>
 

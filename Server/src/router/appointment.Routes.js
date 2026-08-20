@@ -1,122 +1,69 @@
 import express from "express";
-import Appointment from "../model/appointment.Model.js";
+
+import {
+  createAppointment,
+  getAllAppointments,
+  getUserAppointments,
+  getAppointmentById,
+  updateAppointment,
+  updateAppointmentStatus,
+  deleteAppointment,
+} from "../controller/appointment.Controller.js";
+
+import { protect } from "../middleware/protect.Middleware.js";
+import { adminOnly } from "../middleware/adminOnly.middleware.js";
 
 const router = express.Router();
 
-// ======================================================
+// =====================================================
 // CREATE APPOINTMENT
-// ======================================================
+// =====================================================
 
-router.post("/appointments", async (req, res) => {
-  try {
-    const { user, service, doctor, date, time, status } = req.body;
+router.post("/appointments", protect, createAppointment);
 
-    console.log("=================================");
-    console.log("CREATE APPOINTMENT");
-    console.log(req.body);
-    console.log("=================================");
-
-    // User is required
-    if (!user) {
-      return res.status(400).json({
-        message: "User is required",
-      });
-    }
-
-    // Date is required
-    if (!date) {
-      return res.status(400).json({
-        message: "Date is required",
-      });
-    }
-
-    // Time is required
-    if (!time) {
-      return res.status(400).json({
-        message: "Time is required",
-      });
-    }
-
-    // Must have either service OR doctor
-    if (!service && !doctor) {
-      return res.status(400).json({
-        message: "Service or doctor is required",
-      });
-    }
-
-    // Create appointment
-    const appointment = await Appointment.create({
-      user,
-      service: service || undefined,
-      doctor: doctor || undefined,
-      date,
-      time,
-      status: status || "Booked",
-    });
-
-    // Populate data
-    const populatedAppointment = await Appointment.findById(appointment._id)
-      .populate("user")
-      .populate("service")
-      .populate("doctor");
-
-    console.log("Appointment created:");
-    console.log(populatedAppointment);
-
-    res.status(201).json(populatedAppointment);
-  } catch (error) {
-    console.error("CREATE APPOINTMENT ERROR:", error);
-
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-// ======================================================
+// =====================================================
 // GET USER APPOINTMENTS
-// ======================================================
+// =====================================================
 
-router.get("/appointments/user/:userId", async (req, res) => {
-  try {
-    const appointments = await Appointment.find({
-      user: req.params.userId,
-    })
-      .populate("user")
-      .populate("service")
-      .populate("doctor")
-      .sort({ date: 1, time: 1 });
+router.get("/appointments/user/:userId", protect, getUserAppointments);
 
-    res.json(appointments);
-  } catch (error) {
-    console.error("GET USER APPOINTMENTS ERROR:", error);
+// =====================================================
+// GET ALL APPOINTMENTS
+// ADMIN
+// =====================================================
 
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
+router.get("/appointments", protect, adminOnly, getAllAppointments);
 
-// ======================================================
-// GET ALL APPOINTMENTS - ADMIN
-// ======================================================
+// =====================================================
+// GET APPOINTMENT BY ID
+// =====================================================
 
-router.get("/appointments", async (req, res) => {
-  try {
-    const appointments = await Appointment.find()
-      .populate("user")
-      .populate("service")
-      .populate("doctor")
-      .sort({ date: 1, time: 1 });
+router.get("/appointments/:id", protect, getAppointmentById);
 
-    res.json(appointments);
-  } catch (error) {
-    console.error("GET ALL APPOINTMENTS ERROR:", error);
+// =====================================================
+// UPDATE APPOINTMENT
+// ADMIN
+// =====================================================
 
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
+router.put("/appointments/:id", protect, adminOnly, updateAppointment);
+
+// =====================================================
+// UPDATE APPOINTMENT STATUS
+// ADMIN
+// =====================================================
+
+router.put(
+  "/appointments/:id/status",
+  protect,
+  adminOnly,
+  updateAppointmentStatus,
+);
+
+// =====================================================
+// DELETE APPOINTMENT
+// ADMIN
+// =====================================================
+
+router.delete("/appointments/:id", protect, adminOnly, deleteAppointment);
 
 export default router;

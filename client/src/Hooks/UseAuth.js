@@ -8,7 +8,10 @@ export const useAuth = () => {
   const navigate = useNavigate();
   const { setCurrentUser } = useContext(UserContext);
 
-  // Register
+  // =====================================================
+  // REGISTER
+  // =====================================================
+
   const register = async (formData) => {
     try {
       if (
@@ -30,58 +33,137 @@ export const useAuth = () => {
 
       toast.success(res.data.message || "Account Created!");
 
-      // بعد التسجيل ينتقل إلى صفحة Login
       navigate("/login");
     } catch (error) {
+      console.error("REGISTER ERROR:", error);
+
       toast.error(error.response?.data?.message || "Register failed");
     }
   };
 
-  // Login
+  // =====================================================
+  // LOGIN
+  // =====================================================
+
   const login = async (formData) => {
     try {
+      // Validation
       if (!formData.email || !formData.password) {
         toast.error("Please fill all fields");
         return;
       }
 
-      const res = await api.post("/auth/login", formData);
+      // API LOGIN
+      const res = await api.post("/auth/login", {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      console.log("LOGIN RESPONSE:", res.data);
 
       const { user, token } = res.data;
+
+      if (!user || !token) {
+        toast.error("Invalid login response from server");
+        return;
+      }
+
       console.log("USER ROLE:", user.role);
       console.log("USER:", user);
+
+      // =================================================
+      // SAVE LOGIN DATA
+      // =================================================
+
       localStorage.setItem("token", token);
+
       localStorage.setItem("currentUser", JSON.stringify(user));
+
+      // مهم:
+      // DoctorDashboard عندك كان يقرأ user من localStorage
+      // لذلك نخزن الاثنين حتى ما يصير تعارض.
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Update Context
+      setCurrentUser(user);
 
       toast.success(res.data.message || "Login Successfully");
 
-      // تحديد الصفحة حسب صلاحية المستخدم
-      if (user.role === "user") {
-        navigate("/user/dashboard");
-      } else if (user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (user.role === "employee") {
-        navigate("/employee/dashboard");
+      // =================================================
+      // ROLE REDIRECT
+      // =================================================
+
+      if (user.role === "doctor") {
+        console.log("REDIRECTING TO DOCTOR DASHBOARD");
+
+        navigate("/doctor/dashboard", {
+          replace: true,
+        });
+
+        return;
       }
 
-      setCurrentUser(user);
+      if (user.role === "user") {
+        console.log("REDIRECTING TO USER DASHBOARD");
+
+        navigate("/user/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      if (user.role === "admin") {
+        console.log("REDIRECTING TO ADMIN DASHBOARD");
+
+        navigate("/admin/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      if (user.role === "employee") {
+        console.log("REDIRECTING TO EMPLOYEE DASHBOARD");
+
+        navigate("/employee/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      // إذا وصلنا لهون يعني الـ role غير معروف
+      console.error("INVALID ROLE:", user.role);
+
+      toast.error(`Invalid role: ${user.role}`);
     } catch (error) {
+      console.error("LOGIN ERROR:", error);
+
       toast.error(error.response?.data?.message || "Login failed");
     }
   };
 
-  // Logout
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
   const logout = async () => {
     try {
-      localStorage.removeItem("currentUser");
       localStorage.removeItem("token");
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("user");
 
       setCurrentUser(null);
 
       toast.success("Logout Done");
 
-      navigate("/");
+      navigate("/", {
+        replace: true,
+      });
     } catch (error) {
+      console.error("LOGOUT ERROR:", error);
+
       toast.error("Logout failed");
     }
   };

@@ -22,6 +22,8 @@ import {
   Cancel,
   ArrowForward,
   MedicalServices,
+  Logout,
+  Person,
 } from "@mui/icons-material";
 
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -31,14 +33,60 @@ import axios from "axios";
 import { UserContext } from "../../Context/UserContext";
 
 export default function UserDashboard() {
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
 
-  // ================= GET USER APPOINTMENTS =================
+  // =====================================================
+  // GET TOKEN
+  // =====================================================
+
+  const getToken = () => {
+    return (
+      localStorage.getItem("token") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("jwt") ||
+      null
+    );
+  };
+
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
+  const handleLogout = () => {
+    // Remove authentication tokens
+    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("jwt");
+
+    // Remove saved user data
+    localStorage.removeItem("user");
+    localStorage.removeItem("currentUser");
+
+    // Clear user from React Context
+    if (setCurrentUser) {
+      setCurrentUser(null);
+    }
+
+    // Clear appointments
+    setAppointments([]);
+
+    /*
+      IMPORTANT:
+      Use a full page navigation instead of React Router navigate().
+      This forces the Home page to reload completely,
+      so all images and API data are loaded again immediately.
+    */
+    window.location.replace("/home");
+  };
+
+  // =====================================================
+  // GET USER APPOINTMENTS
+  // =====================================================
 
   useEffect(() => {
     const getAppointments = async () => {
@@ -46,22 +94,94 @@ export default function UserDashboard() {
         setLoading(true);
 
         const userId = currentUser?._id || currentUser?.id;
+        const token = getToken();
+
+        console.log("=================================");
+        console.log("DASHBOARD USER:", currentUser);
+        console.log("USER ID:", userId);
+        console.log("TOKEN EXISTS:", !!token);
+        console.log("=================================");
 
         if (!userId) {
+          console.warn("User ID not found");
+
           setAppointments([]);
           setLoading(false);
+
           return;
         }
 
+        if (!token) {
+          console.warn("No token found in localStorage");
+
+          setAppointments([]);
+          setLoading(false);
+
+          return;
+        }
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+
         const res = await axios.get(
           `http://localhost:3000/api/appointments/user/${userId}`,
+          config,
         );
 
-        console.log("User Appointments:", res.data);
+        console.log("=================================");
+        console.log("USER APPOINTMENTS RESPONSE:");
+        console.log(res.data);
+        console.log("=================================");
 
-        setAppointments(Array.isArray(res.data) ? res.data : []);
+        if (Array.isArray(res.data)) {
+          setAppointments(res.data);
+        } else if (Array.isArray(res.data.appointments)) {
+          setAppointments(res.data.appointments);
+        } else if (Array.isArray(res.data.data)) {
+          setAppointments(res.data.data);
+        } else {
+          setAppointments([]);
+        }
       } catch (error) {
-        console.error("Error loading appointments:", error);
+        console.error("=================================");
+        console.error("ERROR LOADING APPOINTMENTS:");
+        console.error(error);
+
+        console.error("BACKEND ERROR:");
+        console.error(error.response?.data);
+
+        console.error("STATUS:");
+        console.error(error.response?.status);
+
+        console.error("=================================");
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.data?.message === "No token provided" ||
+          error.response?.data?.message === "Invalid token" ||
+          error.response?.data?.message === "Token expired"
+        ) {
+          console.warn("Authentication problem");
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("jwt");
+
+          localStorage.removeItem("user");
+          localStorage.removeItem("currentUser");
+
+          if (setCurrentUser) {
+            setCurrentUser(null);
+          }
+
+          window.location.replace("/login");
+
+          return;
+        }
+
         setAppointments([]);
       } finally {
         setLoading(false);
@@ -74,21 +194,31 @@ export default function UserDashboard() {
       setAppointments([]);
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, setCurrentUser]);
 
-  // ================= FORMAT DATE =================
+  // =====================================================
+  // FORMAT DATE
+  // =====================================================
 
   const formatDate = (date) => {
     if (!date) return "No date";
 
-    return new Date(date).toLocaleDateString("en-US", {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
   };
 
-  // ================= FORMAT TIME =================
+  // =====================================================
+  // FORMAT TIME
+  // =====================================================
 
   const formatTime = (time) => {
     if (!time) return "No time";
@@ -106,46 +236,62 @@ export default function UserDashboard() {
     });
   };
 
-  // ================= GET SERVICE NAME =================
+  // =====================================================
+  // GET SERVICE NAME
+  // =====================================================
 
   const getServiceName = (appointment) => {
-    return (
-      appointment.service?.title ||
-      appointment.serviceTitle ||
-      appointment.serviceName ||
-      null
-    );
+    if (!appointment) return null;
+
+    if (typeof appointment.service === "object") {
+      return appointment.service?.title || appointment.service?.name || null;
+    }
+
+    return appointment.serviceTitle || appointment.serviceName || null;
   };
 
-  // ================= GET DOCTOR NAME =================
+  // =====================================================
+  // GET DOCTOR NAME
+  // =====================================================
 
   const getDoctorName = (appointment) => {
-    return (
-      appointment.doctor?.name ||
-      appointment.doctorName ||
-      appointment.doctor?.fullName ||
-      null
-    );
+    if (!appointment) return null;
+
+    if (typeof appointment.doctor === "object") {
+      return appointment.doctor?.name || appointment.doctor?.fullName || null;
+    }
+
+    return appointment.doctorName || null;
   };
 
-  // ================= GET PRICE =================
+  // =====================================================
+  // GET PRICE
+  // =====================================================
 
   const getPrice = (appointment) => {
-    return (
-      appointment.service?.price ??
-      appointment.servicePrice ??
-      appointment.price ??
-      null
-    );
+    if (!appointment) return null;
+
+    if (
+      typeof appointment.service === "object" &&
+      appointment.service?.price !== undefined
+    ) {
+      return appointment.service.price;
+    }
+
+    return appointment.servicePrice ?? appointment.price ?? null;
   };
 
-  // ================= STATUS =================
+  // =====================================================
+  // GET STATUS
+  // =====================================================
 
   const getStatus = (appointment) => {
-    return appointment.status || "Booked";
+    return appointment?.status || "Booked";
   };
 
-  // ================= STATISTICS =================
+  // =====================================================
+  // STATISTICS
+  // =====================================================
 
   const totalAppointments = appointments.length;
 
@@ -167,7 +313,9 @@ export default function UserDashboard() {
     return status === "cancelled" || status === "canceled";
   }).length;
 
-  // ================= NEXT APPOINTMENT =================
+  // =====================================================
+  // NEXT APPOINTMENT
+  // =====================================================
 
   const nextAppointment = useMemo(() => {
     const upcoming = appointments.filter((appointment) => {
@@ -180,7 +328,9 @@ export default function UserDashboard() {
       );
     });
 
-    if (upcoming.length === 0) return null;
+    if (upcoming.length === 0) {
+      return null;
+    }
 
     return [...upcoming].sort((a, b) => {
       const dateA = new Date(`${a.date || "9999-12-31"}T${a.time || "23:59"}`);
@@ -191,12 +341,16 @@ export default function UserDashboard() {
     })[0];
   }, [appointments]);
 
-  // ================= FILTER =================
+  // =====================================================
+  // FILTER
+  // =====================================================
 
   const filteredAppointments = appointments.filter((appointment) => {
     const status = getStatus(appointment).toLowerCase();
 
-    if (filter === "All") return true;
+    if (filter === "All") {
+      return true;
+    }
 
     if (filter === "Upcoming") {
       return (
@@ -217,7 +371,9 @@ export default function UserDashboard() {
     return true;
   });
 
-  // ================= STATUS COLORS =================
+  // =====================================================
+  // STATUS STYLE
+  // =====================================================
 
   const getStatusStyle = (status) => {
     const value = status.toLowerCase();
@@ -242,6 +398,10 @@ export default function UserDashboard() {
     };
   };
 
+  // =====================================================
+  // RENDER
+  // =====================================================
+
   return (
     <Box
       sx={{
@@ -256,16 +416,20 @@ export default function UserDashboard() {
           mx: "auto",
         }}
       >
-        {/* ===================================================== */}
-        {/* TOP HEADER */}
-        {/* ===================================================== */}
+        {/* HEADER */}
 
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: { xs: "flex-start", md: "center" },
-            flexDirection: { xs: "column", md: "row" },
+            alignItems: {
+              xs: "flex-start",
+              md: "center",
+            },
+            flexDirection: {
+              xs: "column",
+              md: "row",
+            },
             gap: 2,
             mb: 3,
           }}
@@ -293,31 +457,94 @@ export default function UserDashboard() {
             </Typography>
           </Box>
 
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => navigate("/user/services")}
+          <Box
             sx={{
-              backgroundColor: "#16704f",
-              borderRadius: 3,
-              px: 3,
-              py: 1.4,
-              textTransform: "none",
-              fontFamily: "Poppins",
-              fontWeight: 600,
-
-              "&:hover": {
-                backgroundColor: "#10583e",
+              display: "flex",
+              gap: 1.2,
+              flexWrap: "wrap",
+              justifyContent: {
+                xs: "flex-start",
+                md: "flex-end",
               },
             }}
           >
-            Book Appointment
-          </Button>
+            <Button
+              variant="contained"
+              startIcon={<MedicalServices />}
+              onClick={() => navigate("/user/doctors")}
+              sx={{
+                backgroundColor: "#16704f",
+                borderRadius: 3,
+                px: 2.5,
+                py: 1.4,
+                textTransform: "none",
+                fontFamily: "Poppins",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+
+                "&:hover": {
+                  backgroundColor: "#10583e",
+                },
+              }}
+            >
+              Book Doctor Appointment
+            </Button>
+
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={() => navigate("/user/services")}
+              sx={{
+                borderRadius: 3,
+                px: 2.5,
+                py: 1.4,
+                textTransform: "none",
+                fontFamily: "Poppins",
+                fontWeight: 600,
+                color: "#16704f",
+                borderColor: "#16704f",
+                backgroundColor: "white",
+                whiteSpace: "nowrap",
+
+                "&:hover": {
+                  borderColor: "#10583e",
+                  backgroundColor: "#e5f4ed",
+                },
+              }}
+            >
+              Book a Service
+            </Button>
+
+            {/* LOGOUT */}
+
+            <Button
+              variant="outlined"
+              startIcon={<Logout />}
+              onClick={handleLogout}
+              sx={{
+                borderRadius: 3,
+                px: 2.5,
+                py: 1.4,
+                textTransform: "none",
+                fontFamily: "Poppins",
+                fontWeight: 600,
+                color: "#c62828",
+                borderColor: "#e0b4b4",
+                backgroundColor: "white",
+                whiteSpace: "nowrap",
+
+                "&:hover": {
+                  borderColor: "#c62828",
+                  backgroundColor: "#fff5f5",
+                },
+              }}
+            >
+              Logout
+            </Button>
+          </Box>
         </Box>
 
-        {/* ===================================================== */}
         {/* STATS */}
-        {/* ===================================================== */}
 
         <Box
           sx={{
@@ -352,7 +579,9 @@ export default function UserDashboard() {
                 <Typography
                   color="text.secondary"
                   fontSize={14}
-                  sx={{ fontFamily: "Poppins" }}
+                  sx={{
+                    fontFamily: "Poppins",
+                  }}
                 >
                   Total Appointments
                 </Typography>
@@ -402,7 +631,9 @@ export default function UserDashboard() {
                 <Typography
                   color="text.secondary"
                   fontSize={14}
-                  sx={{ fontFamily: "Poppins" }}
+                  sx={{
+                    fontFamily: "Poppins",
+                  }}
                 >
                   Upcoming
                 </Typography>
@@ -452,7 +683,9 @@ export default function UserDashboard() {
                 <Typography
                   color="text.secondary"
                   fontSize={14}
-                  sx={{ fontFamily: "Poppins" }}
+                  sx={{
+                    fontFamily: "Poppins",
+                  }}
                 >
                   Completed
                 </Typography>
@@ -502,7 +735,9 @@ export default function UserDashboard() {
                 <Typography
                   color="text.secondary"
                   fontSize={14}
-                  sx={{ fontFamily: "Poppins" }}
+                  sx={{
+                    fontFamily: "Poppins",
+                  }}
                 >
                   Cancelled
                 </Typography>
@@ -532,16 +767,17 @@ export default function UserDashboard() {
           </Paper>
         </Box>
 
-        {/* ===================================================== */}
         {/* NEXT APPOINTMENT */}
-        {/* ===================================================== */}
 
         {nextAppointment && (
           <Paper
             elevation={0}
             sx={{
               borderRadius: 4,
-              p: { xs: 2.5, md: 3 },
+              p: {
+                xs: 2.5,
+                md: 3,
+              },
               mb: 3,
               background: "linear-gradient(135deg, #16704f 0%, #10583e 100%)",
               color: "white",
@@ -551,8 +787,14 @@ export default function UserDashboard() {
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: { xs: "flex-start", md: "center" },
-                flexDirection: { xs: "column", md: "row" },
+                alignItems: {
+                  xs: "flex-start",
+                  md: "center",
+                },
+                flexDirection: {
+                  xs: "column",
+                  md: "row",
+                },
                 gap: 2,
               }}
             >
@@ -578,17 +820,17 @@ export default function UserDashboard() {
                   {getServiceName(nextAppointment) || "Medical Appointment"}
                 </Typography>
 
-                <Typography
-                  sx={{
-                    mt: 1,
-                    fontFamily: "Poppins",
-                    opacity: 0.95,
-                  }}
-                >
-                  {getDoctorName(nextAppointment)
-                    ? `👨‍⚕️ Dr. ${getDoctorName(nextAppointment)}`
-                    : "👨‍⚕️ Medical Doctor"}
-                </Typography>
+                {getDoctorName(nextAppointment) && (
+                  <Typography
+                    sx={{
+                      mt: 1,
+                      fontFamily: "Poppins",
+                      opacity: 0.95,
+                    }}
+                  >
+                    👨‍⚕️ Dr. {getDoctorName(nextAppointment)}
+                  </Typography>
+                )}
 
                 <Box
                   sx={{
@@ -606,7 +848,13 @@ export default function UserDashboard() {
                     }}
                   >
                     <CalendarMonth fontSize="small" />
-                    <Typography fontSize={14} sx={{ fontFamily: "Poppins" }}>
+
+                    <Typography
+                      fontSize={14}
+                      sx={{
+                        fontFamily: "Poppins",
+                      }}
+                    >
                       {formatDate(nextAppointment.date)}
                     </Typography>
                   </Box>
@@ -619,7 +867,13 @@ export default function UserDashboard() {
                     }}
                   >
                     <AccessTime fontSize="small" />
-                    <Typography fontSize={14} sx={{ fontFamily: "Poppins" }}>
+
+                    <Typography
+                      fontSize={14}
+                      sx={{
+                        fontFamily: "Poppins",
+                      }}
+                    >
                       {formatTime(nextAppointment.time)}
                     </Typography>
                   </Box>
@@ -630,9 +884,9 @@ export default function UserDashboard() {
                 variant="contained"
                 endIcon={<ArrowForward />}
                 onClick={() =>
-                  document
-                    .getElementById("my-bookings")
-                    ?.scrollIntoView({ behavior: "smooth" })
+                  document.getElementById("my-bookings")?.scrollIntoView({
+                    behavior: "smooth",
+                  })
                 }
                 sx={{
                   backgroundColor: "white",
@@ -655,9 +909,7 @@ export default function UserDashboard() {
           </Paper>
         )}
 
-        {/* ===================================================== */}
         {/* MAIN */}
-        {/* ===================================================== */}
 
         <Box
           sx={{
@@ -669,9 +921,7 @@ export default function UserDashboard() {
             gap: 2,
           }}
         >
-          {/* ================================================= */}
           {/* LEFT SIDE */}
-          {/* ================================================= */}
 
           <Box
             sx={{
@@ -680,7 +930,7 @@ export default function UserDashboard() {
               gap: 2,
             }}
           >
-            {/* ================= CALENDAR ================= */}
+            {/* CALENDAR */}
 
             <Paper
               elevation={0}
@@ -753,11 +1003,16 @@ export default function UserDashboard() {
                   const dayNumber = i + 1;
 
                   const hasAppointment = appointments.some((appointment) => {
-                    if (!appointment.date) return false;
+                    if (!appointment.date) {
+                      return false;
+                    }
+
+                    const appointmentDate = new Date(appointment.date);
 
                     return (
-                      new Date(appointment.date).getDate() === dayNumber &&
-                      new Date(appointment.date).getMonth() === 7
+                      appointmentDate.getDate() === dayNumber &&
+                      appointmentDate.getMonth() === 7 &&
+                      appointmentDate.getFullYear() === 2026
                     );
                   });
 
@@ -794,7 +1049,7 @@ export default function UserDashboard() {
               </Box>
             </Paper>
 
-            {/* ================= PROFILE ================= */}
+            {/* PROFILE */}
 
             <Paper
               elevation={0}
@@ -857,6 +1112,7 @@ export default function UserDashboard() {
               <Button
                 fullWidth
                 variant="outlined"
+                startIcon={<Person />}
                 sx={{
                   mt: 3,
                   borderRadius: 3,
@@ -876,9 +1132,7 @@ export default function UserDashboard() {
             </Paper>
           </Box>
 
-          {/* ================================================= */}
           {/* RIGHT SIDE */}
-          {/* ================================================= */}
 
           <Paper
             id="my-bookings"
@@ -888,7 +1142,7 @@ export default function UserDashboard() {
               overflow: "hidden",
             }}
           >
-            {/* ================= BOOKINGS HEADER ================= */}
+            {/* BOOKINGS HEADER */}
 
             <Box
               sx={{
@@ -896,8 +1150,14 @@ export default function UserDashboard() {
                 borderBottom: "1px solid #eee",
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: { xs: "flex-start", md: "center" },
-                flexDirection: { xs: "column", md: "row" },
+                alignItems: {
+                  xs: "flex-start",
+                  md: "center",
+                },
+                flexDirection: {
+                  xs: "column",
+                  md: "row",
+                },
                 gap: 2,
               }}
             >
@@ -911,16 +1171,24 @@ export default function UserDashboard() {
                 >
                   My Bookings
                 </Typography>
-
                 <Typography
                   variant="body2"
-                  color="text.secondary"
                   sx={{
+                    mt: 1,
+                    color: "#c62828",
+                    backgroundColor: "#fff5f5",
+                    border: "1px solid #f0caca",
+                    borderRadius: 2,
+                    p: 1.5,
                     fontFamily: "Poppins",
                   }}
                 >
-                  Your booked medical appointments
+                  <strong>Note:</strong> To cancel or reschedule any appointment
+                  or medical service, please contact us via email at{" "}
+                  <strong>clinicjo@gmail.com</strong>. Users cannot cancel
+                  appointments directly from the dashboard.
                 </Typography>
+           
               </Box>
 
               <Box>
@@ -934,7 +1202,7 @@ export default function UserDashboard() {
               </Box>
             </Box>
 
-            {/* ================= FILTERS ================= */}
+            {/* FILTERS */}
 
             <Box
               sx={{
@@ -960,6 +1228,7 @@ export default function UserDashboard() {
                     ...(filter === item
                       ? {
                           backgroundColor: "#16704f",
+
                           "&:hover": {
                             backgroundColor: "#10583e",
                           },
@@ -975,7 +1244,7 @@ export default function UserDashboard() {
               ))}
             </Box>
 
-            {/* ================= APPOINTMENTS ================= */}
+            {/* APPOINTMENTS */}
 
             <Box
               sx={{
@@ -1168,11 +1437,16 @@ export default function UserDashboard() {
                         }}
                       >
                         {serviceName && (
-                          <Box sx={{ mb: 0.8 }}>
+                          <Box
+                            sx={{
+                              mb: 0.8,
+                            }}
+                          >
                             <Typography
                               fontWeight="bold"
                               sx={{
                                 fontFamily: "Poppins",
+                                color: "#12372A",
                               }}
                             >
                               {serviceName}
@@ -1227,6 +1501,18 @@ export default function UserDashboard() {
                             Price: ${price}
                           </Typography>
                         )}
+
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            mt: 1,
+                            color: "#8a9992",
+                            fontFamily: "Poppins",
+                          }}
+                        >
+                          Booking ID: {appointment._id || "N/A"}
+                        </Typography>
                       </Box>
 
                       {/* STATUS */}

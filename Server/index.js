@@ -10,6 +10,7 @@ import service from "./src/router/service.Routes.js";
 import doctorRoutes from "./src/router/doctors.Routes.js";
 import bookingRoutes from "./src/router/booking.Routes.js";
 import appointmentRoutes from "./src/router/appointment.Routes.js";
+
 import path from "path";
 import cors from "cors";
 dotenv.config();

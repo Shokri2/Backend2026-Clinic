@@ -1,231 +1,249 @@
-import User from "../model/auth.Model.js"
+import User from "../model/auth.Model.js";
 import bcrypt from "bcrypt";
-// crud
-//create-read-update-delete
 
 export const getALLUsers = async (req, res) => {
   try {
     const users = await User.find().select("-hash_password");
-    if (users.length === 0) {
-      return res.status(200).json({ message: " not user yet", users: [] });
-    }
+
     return res.status(200).json({
-      message: "user found",
+      message: "Users found",
       users,
     });
   } catch (error) {
-    console.log(error);
+    console.error("GET ALL USERS ERROR:", error);
+
     return res.status(500).json({
-      message: "internel server error",
+      message: "Internal server error",
     });
   }
 };
-export const getAllEmployess = async (req, res) => {
+
+export const getAllDoctors = async (req, res) => {
   try {
-    const users = await User.find({ role: "employee" }).select(
-      "-hashed_password",
-    );
-    if (users.length === 0) {
-      return res.status(200).json({ message: "no users yet", users: [] });
-    }
-    return res.status(200).json({ message: "users found", users });
+    const users = await User.find({
+      role: "doctor",
+    }).select("-hash_password");
+
+    return res.status(200).json({
+      message: "Doctors found",
+      users,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "internal server error" });
+    console.error("GET DOCTORS ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
+
 export const getUserById = async (req, res) => {
   try {
-    const UserId = req.params.id;
+    const { id } = req.params;
 
-    if (!UserId) {
+    if (!id) {
       return res.status(400).json({
-        message: "user not selected",
+        message: "User ID is required",
       });
     }
-    const user = await User.findById({ UserId }).select("-hash_password");
+
+    const user = await User.findById(id).select("-hash_password");
+
     if (!user) {
       return res.status(404).json({
-        message: "user not found",
+        message: "User not found",
       });
     }
+
     return res.status(200).json({
-      message: "user found",
+      message: "User found",
       user,
     });
   } catch (error) {
+    console.error("GET USER ERROR:", error);
+
     return res.status(500).json({
-      message: "internel server error",
+      message: "Internal server error",
     });
   }
 };
 
 export const deleteUser = async (req, res) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
+
     if (!id) {
       return res.status(400).json({
-        message: " user not select",
+        message: "User ID is required",
       });
     }
+
     const user = await User.findByIdAndDelete(id);
+
     if (!user) {
-      return res.status(400).json({
-        message: "not deleted",
+      return res.status(404).json({
+        message: "User not found",
       });
     }
+
     return res.status(200).json({
-      message: "user deleted",
+      message: "User deleted successfully",
     });
   } catch (error) {
+    console.error("DELETE USER ERROR:", error);
+
     return res.status(500).json({
-      message: "internel server error",
+      message: "Internal server error",
     });
   }
 };
 
 export const updateUser = async (req, res) => {
   try {
-    const { id } = req.params.id;
-    const { name, email } = req.body;
+    const { id } = req.params;
+    const { name, email, password, role } = req.body;
+
     if (!id) {
       return res.status(400).json({
-        message: " user not updated",
+        message: "User ID is required",
       });
     }
-    if (!email || !name) {
+
+    if (!name || !name.trim()) {
       return res.status(400).json({
-        message: "please enter new value",
-        user,
+        message: "Name is required",
       });
     }
-    const user = await User.findByIdAndUpdate(
-      id,
-      { name, email },
-      { new: true },
-    );
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: "Please enter a valid email",
+      });
+    }
+
+    const allowedRoles = ["user", "admin", "doctor"];
+
+    if (role && !allowedRoles.includes(role)) {
+      return res.status(400).json({
+        message: "Invalid role",
+      });
+    }
+
+    const existingUser = await User.findOne({
+      email: email.toLowerCase().trim(),
+      _id: { $ne: id },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email is already used by another user",
+      });
+    }
+
+    const updateData = {
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+    };
+
+    if (role) {
+      updateData.role = role;
+    }
+
+    if (password && password.trim() !== "") {
+      if (password.length < 6) {
+        return res.status(400).json({
+          message: "Password must be at least 6 characters",
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      updateData.hash_password = hashedPassword;
+    }
+
+    const user = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-hash_password");
+
     if (!user) {
-      return res.status(400).json({
-        message: "user not update",
-      });
-    }
-    return res.status(200).json({
-      message: "user update",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "internel server error",
-    });
-  }
-};
-export const getUserByEmail = async (req, res) => {
-  try {
-    const email = req.body;
-    if (!email) {
-      return res.status(400).json({
-        message: "enter a valid email",
-      });
-    }
-    const isExist = await User.findOne({ email });
-    if (!isExist) {
       return res.status(404).json({
-        message: "user email not found",
+        message: "User not found",
       });
     }
+
     return res.status(200).json({
-      message: "user email  found",
-      isExist,
+      message: "User updated successfully",
+      user,
     });
   } catch (error) {
+    console.error("UPDATE USER ERROR:", error);
+
     return res.status(500).json({
-      message: "internel server error",
+      message: "Internal server error",
     });
   }
 };
+
 export const updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
+
     if (!id) {
       return res.status(400).json({
-        message: " user not updated",
+        message: "User ID is required",
       });
     }
+
     if (!role) {
       return res.status(400).json({
-        message: "please enter new role",
-        user,
+        message: "Role is required",
       });
     }
-    const user = await User.findByIdAndUpdate(id, { role }, { new: true });
-    if (!user) {
+
+    const allowedRoles = ["user", "admin", "doctor"];
+
+    if (!allowedRoles.includes(role)) {
       return res.status(400).json({
-        message: "user role not update",
-        user,
+        message: "Invalid role",
       });
     }
-    return res.status(200).json({
-      message: "user role update",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "internel server error",
-    });
-  }
-};
-export const updatepass = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const { newpassword, confirmNewPassowrd } = req.body;
-    if (!id) {
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      {
+        role,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).select("-hash_password");
+
+    if (!user) {
       return res.status(404).json({
-        message: "user not found",
+        message: "User not found",
       });
-      if (!newpassword || !confirmNewPassowrd) {
-        return res.status(404).json({
-          message: "please enter new passowrd",
-        });
-      }
-
-      const passRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-      if (password !== confimpassword) {
-        return res.status(400).json({ message: "password not match" });
-      }
-      if (newpassword || !confirmNewPassowrd) {
-        return res.status(404).json({
-          message: "password not match",
-        });
-      }
-
-      const exitUser = await User.findOne({ _id: id });
-      if (!exitUser) {
-        return res.status(404).json({
-          message: "user not found",
-        });
-      }
-      const isMatch = await bcrypt.compare(
-        newPassowrd,
-        existUser.hash_passowrd,
-      );
-      if (isMatch) {
-        return res.status(400).json({
-          message: "new passowrd cant be the old passowrd",
-        });
-      }
-      const hash_passowrd = await bcrypt.hash(newpassowrd, 10);
-      const newUser = await User.findByIdAndUpdate(
-        id,
-        { hash_passowrd },
-        { new: true },
-      );
     }
+
     return res.status(200).json({
-      message: "user passowrd update",
-      user: newUser,
+      message: "User role updated successfully",
+      user,
     });
   } catch (error) {
+    console.error("UPDATE ROLE ERROR:", error);
+
     return res.status(500).json({
-      message: "internel server error",
+      message: "Internal server error",
     });
   }
 };

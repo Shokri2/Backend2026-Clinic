@@ -28,10 +28,12 @@ import ManageMenu from "./Components/Admin/manage/ManageMenu/ManageMenu.jsx";
 import AdminDashboard from "./Components/Admin/AdminDashboard.jsx";
 import ManageCategories from "./Components/Admin/manage/ManageCategories/ManageCategories.jsx";
 import ManageShifts from "./Components/Admin/manage/ManageShifts/ManageShifts.jsx";
+import ManageDoctors from "./Components/Admin/manage/ManageDoctors/ManageDoctors.jsx";
+import ManageServices from "./Components/Admin/manage/ManageServices/ManageServices.jsx";
+import ManageAppointments from "./Components/Admin/manage/ManageAppointments";
 
-// Employee
-import EmployeeLayout from "./Components/Employee/EmployeeLayout.jsx";
-import EmployeeDashboard from "./Components/Employee/EmployeeDashboard.jsx";
+// Doctor
+import DoctorDashboard from "./Components/doctor/DoctorDashboard.jsx";
 
 // User
 import UserLayout from "./Components/User/UserLayout.jsx";
@@ -47,31 +49,64 @@ function App() {
         }}
       />
 
-      {/* ================= HEADER ================= */}
-
-      <Header />
-
       <Routes>
-
         {/* ================= PUBLIC PAGES ================= */}
 
-        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/"
+          element={
+            <>
+              <Header />
+              <LandingPage />
+            </>
+          }
+        />
 
-        <Route path="/home" element={<Home />} />
+        <Route
+          path="/home"
+          element={
+            <>
+              <Header />
+              <Home />
+            </>
+          }
+        />
 
-        <Route path="/About" element={<About />} />
+        <Route
+          path="/About"
+          element={
+            <>
+              <Header />
+              <About />
+            </>
+          }
+        />
 
-        <Route path="/Doctors" element={<Doctors />} />
+        <Route
+          path="/Doctors"
+          element={
+            <>
+              <Header />
+              <Doctors />
+            </>
+          }
+        />
 
-        <Route path="/services" element={<Services />} />
-
+        <Route
+          path="/services"
+          element={
+            <>
+              <Header />
+              <Services />
+            </>
+          }
+        />
 
         {/* ================= AUTH ================= */}
 
         <Route path="/create-account" element={<Register />} />
 
         <Route path="/login" element={<Login />} />
-
 
         {/* ================= USER ================= */}
 
@@ -86,62 +121,45 @@ function App() {
 
           <Route path="services" element={<Services />} />
 
-          {/* Booking */}
-          <Route
-            path="booking/:serviceId"
-            element={<Booking />}
-          />
+          <Route path="booking/:serviceId" element={<Booking />} />
 
-          <Route
-            path="booking/doctor/:doctorId"
-            element={<Booking />}
-          />
+          <Route path="booking/doctor/:doctorId" element={<Booking />} />
         </Route>
-
 
         {/* ================= ADMIN ================= */}
 
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
 
-            <Route
-              path="dashboard"
-              element={<AdminDashboard />}
-            />
+            <Route path="manage-users" element={<ManageUsers />} />
 
-            <Route
-              path="manage-users"
-              element={<ManageUsers />}
-            />
-
-            <Route
-              path="manage-menu"
-              element={<ManageMenu />}
-            />
+            <Route path="manage-menu" element={<ManageMenu />} />
 
             <Route
               path="manage-categories"
               element={<ManageCategories />}
             />
 
-            <Route
-              path="manage-shifts"
-              element={<ManageShifts />}
-            />
+            <Route path="manage-shifts" element={<ManageShifts />} />
 
+            <Route path="manage-doctors" element={<ManageDoctors />} />
+
+            <Route path="manage-services" element={<ManageServices />} />
+
+            <Route
+              path="manage-appointments"
+              element={<ManageAppointments />}
+            />
           </Route>
         </Route>
 
+        {/* ================= DOCTOR ================= */}
 
-        {/* ================= EMPLOYEE ================= */}
-
-        <Route path="/employee" element={<EmployeeLayout />}>
-          <Route
-            path="dashboard"
-            element={<EmployeeDashboard />}
-          />
-        </Route>
-
+        <Route
+          path="/doctor/dashboard"
+          element={<DoctorDashboard />}
+        />
       </Routes>
     </>
   );

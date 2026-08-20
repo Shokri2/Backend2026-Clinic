@@ -1,21 +1,29 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
-
-export const protect = async (req, res, next) => {
-  const tokens = req.headers['authorization']?.split(' ')[1];
-  // ? it may be null
-  if (!tokens) {
-    return res.status(401).json({ message: "not allowed" });
-  }
-  console.log(tokens);
-  
+export const protect = (req, res, next) => {
   try {
-    const decoded = jwt.verify(tokens, process.env.JWT_SECRET);
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        message: "No token provided",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     req.user = decoded;
+
+    console.log("PROTECTED USER:", req.user);
+
     next();
   } catch (error) {
-    return res.status(500).json({
-      message: "internel server error in protect",
+    console.error("PROTECT ERROR:", error);
+
+    return res.status(401).json({
+      message: "Invalid token",
     });
   }
 };

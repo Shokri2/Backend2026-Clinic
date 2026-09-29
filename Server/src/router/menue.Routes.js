@@ -8,7 +8,7 @@ import {
   getAllMenu,
 } from "../controller/menu.Controller.js";
 import { protect } from "../middleware/protect.Middleware.js";
-import { adminOnly } from "../middleware/adminOnly.Middleware.js";
+import { adminOnly } from "../middleware/adminOnly.middleware.js";
 const route = express.Router();
 
 route.post("/create-menue", protect, createMenuItem);

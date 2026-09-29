@@ -27,14 +27,17 @@ export default function ManageDoctors() {
 
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     department: "",
     experience: "",
+    price: "",
     image: "",
     about: "",
   });
 
-  // ================= GET DOCTORS =================
-
+  // =========================
+  // GET DOCTORS
+  // =========================
   const getDoctors = async () => {
     try {
       setLoading(true);
@@ -43,8 +46,9 @@ export default function ManageDoctors() {
 
       setDoctors(res.data);
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to load doctors");
+      console.error("GET DOCTORS ERROR:", error);
+
+      toast.error(error.response?.data?.message || "Failed to load doctors");
     } finally {
       setLoading(false);
     }
@@ -54,15 +58,18 @@ export default function ManageDoctors() {
     getDoctors();
   }, []);
 
-  // ================= OPEN ADD =================
-
+  // =========================
+  // ADD DOCTOR
+  // =========================
   const handleAdd = () => {
     setEditingDoctor(null);
 
     setFormData({
       name: "",
+      email: "",
       department: "",
       experience: "",
+      price: "",
       image: "",
       about: "",
     });
@@ -70,57 +77,153 @@ export default function ManageDoctors() {
     setOpen(true);
   };
 
-  // ================= OPEN EDIT =================
-
+  // =========================
+  // EDIT DOCTOR
+  // =========================
   const handleEdit = (doctor) => {
     setEditingDoctor(doctor);
 
     setFormData({
       name: doctor.name || "",
+
+      // If the backend populates user
+      email: doctor.user?.email || doctor.email || "",
+
       department: doctor.department || "",
-      experience: doctor.experience || "",
+
+      experience: doctor.experience ?? "",
+
+      price: doctor.price ?? "",
+
       image: doctor.image || "",
+
       about: doctor.about || "",
     });
 
     setOpen(true);
   };
 
-  // ================= SAVE =================
-
+  // =========================
+  // SAVE DOCTOR
+  // =========================
   const handleSave = async () => {
     try {
-      if (!formData.name || !formData.department) {
-        toast.error("Please fill required fields");
+      // Required fields
+      if (!formData.name.trim()) {
+        toast.error("Doctor name is required");
         return;
       }
 
+      if (!formData.email.trim()) {
+        toast.error("Doctor email is required");
+        return;
+      }
+
+      if (!formData.department.trim()) {
+        toast.error("Department is required");
+        return;
+      }
+
+      // Validate experience
+      if (formData.experience === "" || Number(formData.experience) < 0) {
+        toast.error("Please enter valid experience");
+        return;
+      }
+
+      // Validate price
+      if (
+        formData.price === "" ||
+        Number(formData.price) < 20 ||
+        Number(formData.price) > 50
+      ) {
+        toast.error("Price must be between 20 and 50");
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(formData.email)) {
+        toast.error("Please enter a valid email");
+        return;
+      }
+
+      const dataToSend = {
+        name: formData.name.trim(),
+
+        email: formData.email.trim().toLowerCase(),
+
+        department: formData.department.trim(),
+
+        experience: Number(formData.experience),
+
+        price: Number(formData.price),
+
+        image: formData.image.trim(),
+
+        about: formData.about.trim(),
+      };
+
+      console.log("DOCTOR DATA:", dataToSend);
+
+      // =========================
+      // UPDATE
+      // =========================
       if (editingDoctor) {
-        // UPDATE
-        await axios.put(
+        const response = await axios.put(
           `http://localhost:3000/api/doctors/${editingDoctor._id}`,
-          formData,
+          dataToSend,
         );
 
+        console.log("UPDATE DOCTOR RESPONSE:", response.data);
+
         toast.success("Doctor updated successfully");
-      } else {
-        // CREATE
-        await axios.post("http://localhost:3000/api/doctors", formData);
+      }
+
+      // =========================
+      // CREATE
+      // =========================
+      else {
+        const response = await axios.post(
+          "http://localhost:3000/api/doctors",
+          dataToSend,
+        );
+
+        console.log("CREATE DOCTOR RESPONSE:", response.data);
 
         toast.success("Doctor added successfully");
       }
 
+      // Close dialog
       setOpen(false);
 
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        department: "",
+        experience: "",
+        price: "",
+        image: "",
+        about: "",
+      });
+
+      setEditingDoctor(null);
+
+      // Refresh doctors
       getDoctors();
     } catch (error) {
-      console.error(error);
-      toast.error("Operation failed");
+      console.error("DOCTOR SAVE ERROR:", error);
+
+      console.log("BACKEND RESPONSE:", error.response?.data);
+
+      toast.error(error.response?.data?.message || "Operation failed");
     }
   };
 
-  // ================= DELETE =================
-
+  // =========================
+  // DELETE DOCTOR
+  // =========================
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this doctor?",
@@ -135,19 +238,17 @@ export default function ManageDoctors() {
 
       getDoctors();
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete doctor");
+      console.error("DELETE DOCTOR ERROR:", error);
+
+      toast.error(error.response?.data?.message || "Failed to delete doctor");
     }
   };
 
   return (
-    <Box
-      sx={{
-        p: { xs: 2, md: 4 },
-      }}
-    >
-      {/* HEADER */}
-
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
+      {/* =========================
+          HEADER
+      ========================= */}
       <Box
         sx={{
           display: "flex",
@@ -191,8 +292,9 @@ export default function ManageDoctors() {
         </Button>
       </Box>
 
-      {/* LOADING */}
-
+      {/* =========================
+          LOADING
+      ========================= */}
       {loading ? (
         <Box
           sx={{
@@ -201,9 +303,16 @@ export default function ManageDoctors() {
             py: 8,
           }}
         >
-          <CircularProgress sx={{ color: "#16704f" }} />
+          <CircularProgress
+            sx={{
+              color: "#16704f",
+            }}
+          />
         </Box>
       ) : (
+        /* =========================
+           DOCTORS
+        ========================= */
         <Box
           sx={{
             display: "grid",
@@ -225,11 +334,11 @@ export default function ManageDoctors() {
                 border: "1px solid #e5e7eb",
               }}
             >
-              {/* IMAGE */}
-
+              {/* Doctor Image */}
               <Box
                 component="img"
                 src={doctor.image || "https://via.placeholder.com/300"}
+                alt={doctor.name}
                 sx={{
                   width: "100%",
                   height: 220,
@@ -238,8 +347,7 @@ export default function ManageDoctors() {
                 }}
               />
 
-              {/* INFO */}
-
+              {/* Name */}
               <Typography
                 variant="h6"
                 fontWeight="bold"
@@ -251,16 +359,55 @@ export default function ManageDoctors() {
                 Dr. {doctor.name}
               </Typography>
 
-              <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+              {/* Department */}
+              <Typography
+                color="text.secondary"
+                sx={{
+                  mt: 0.5,
+                }}
+              >
                 {doctor.department}
               </Typography>
 
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {/* Experience */}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  mt: 1,
+                }}
+              >
                 Experience: {doctor.experience} years
               </Typography>
 
-              {/* ACTIONS */}
+              {/* Email */}
+              {doctor.user?.email && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    mt: 1,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {doctor.user.email}
+                </Typography>
+              )}
 
+              {/* Price */}
+              <Typography
+                sx={{
+                  mt: 1,
+                  color: "#16704f",
+                  fontWeight: 700,
+                  fontSize: "17px",
+                  fontFamily: "Poppins",
+                }}
+              >
+                ${doctor.price} / Appointment
+              </Typography>
+
+              {/* Actions */}
               <Box
                 sx={{
                   display: "flex",
@@ -269,6 +416,7 @@ export default function ManageDoctors() {
                   mt: 2,
                 }}
               >
+                {/* Edit */}
                 <IconButton
                   onClick={() => handleEdit(doctor)}
                   sx={{
@@ -278,6 +426,7 @@ export default function ManageDoctors() {
                   <Edit />
                 </IconButton>
 
+                {/* Delete */}
                 <IconButton
                   onClick={() => handleDelete(doctor._id)}
                   sx={{
@@ -292,8 +441,9 @@ export default function ManageDoctors() {
         </Box>
       )}
 
-      {/* ================= ADD / EDIT DIALOG ================= */}
-
+      {/* =========================
+          ADD / EDIT DIALOG
+      ========================= */}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -305,6 +455,7 @@ export default function ManageDoctors() {
         </DialogTitle>
 
         <DialogContent>
+          {/* Doctor Name */}
           <TextField
             fullWidth
             label="Doctor Name"
@@ -318,6 +469,23 @@ export default function ManageDoctors() {
             }
           />
 
+          {/* Doctor Email */}
+          <TextField
+            fullWidth
+            label="Doctor Email"
+            type="email"
+            margin="normal"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                email: e.target.value,
+              })
+            }
+            helperText="This email will be used for doctor login"
+          />
+
+          {/* Department */}
           <TextField
             fullWidth
             label="Department"
@@ -331,6 +499,7 @@ export default function ManageDoctors() {
             }
           />
 
+          {/* Experience */}
           <TextField
             fullWidth
             label="Experience"
@@ -343,8 +512,36 @@ export default function ManageDoctors() {
                 experience: e.target.value,
               })
             }
+            slotProps={{
+              htmlInput: {
+                min: 0,
+              },
+            }}
           />
 
+          {/* Price */}
+          <TextField
+            fullWidth
+            label="Appointment Price"
+            type="number"
+            margin="normal"
+            value={formData.price}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                price: e.target.value,
+              })
+            }
+            slotProps={{
+              htmlInput: {
+                min: 20,
+                max: 50,
+              },
+            }}
+            helperText="Price must be between $20 and $50"
+          />
+
+          {/* Image */}
           <TextField
             fullWidth
             label="Image URL"
@@ -358,6 +555,7 @@ export default function ManageDoctors() {
             }
           />
 
+          {/* About */}
           <TextField
             fullWidth
             label="About"
@@ -374,6 +572,9 @@ export default function ManageDoctors() {
           />
         </DialogContent>
 
+        {/* =========================
+            DIALOG ACTIONS
+        ========================= */}
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
 
@@ -382,6 +583,7 @@ export default function ManageDoctors() {
             onClick={handleSave}
             sx={{
               backgroundColor: "#16704f",
+
               "&:hover": {
                 backgroundColor: "#10583e",
               },

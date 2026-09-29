@@ -695,18 +695,18 @@ export default function Booking() {
                 fontFamily: "Poppins",
               }}
             >
-              Choose a time between 8:00 AM and 4:00 PM.
+              Choose your appointment time.
             </Typography>
 
             <TextField
               fullWidth
-              type="time"
+              select
+              label="Select Time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
               slotProps={{
-                htmlInput: {
-                  min: "08:00",
-                  max: "16:00",
+                select: {
+                  native: true,
                 },
               }}
               sx={{
@@ -714,7 +714,30 @@ export default function Booking() {
                   borderRadius: 2,
                 },
               }}
-            />
+            >
+              <option value="" disabled>
+              </option>
+
+              <option value="08:00">8:00 AM - 8:30 AM</option>
+              <option value="08:30">8:30 AM - 9:00 AM</option>
+              <option value="09:00">9:00 AM - 9:30 AM</option>
+              <option value="09:30">9:30 AM - 10:00 AM</option>
+
+              <option value="10:00">10:00 AM - 10:30 AM</option>
+              <option value="10:30">10:30 AM - 11:00 AM</option>
+              <option value="11:00">11:00 AM - 11:30 AM</option>
+              <option value="11:30">11:30 AM - 12:00 PM</option>
+
+              <option value="12:00">12:00 PM - 12:30 PM</option>
+              <option value="12:30">12:30 PM - 1:00 PM</option>
+              <option value="13:00">1:00 PM - 1:30 PM</option>
+              <option value="13:30">1:30 PM - 2:00 PM</option>
+
+              <option value="14:00">2:00 PM - 2:30 PM</option>
+              <option value="14:30">2:30 PM - 3:00 PM</option>
+              <option value="15:00">3:00 PM - 3:30 PM</option>
+              <option value="15:30">3:30 PM - 4:00 PM</option>
+            </TextField>
           </Paper>
 
           <Divider sx={{ my: 4 }} />

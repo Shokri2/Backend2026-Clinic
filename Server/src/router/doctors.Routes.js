@@ -7,6 +7,7 @@ import {
   updateDoctor,
   deleteDoctor,
   getDoctorAppointments,
+  completeDoctorAppointment,
 } from "../controller/doctor.Controller.js";
 
 import { protect } from "../middleware/protect.Middleware.js";
@@ -17,6 +18,13 @@ const route = express.Router();
 route.get("/doctors", getDoctors);
 
 route.get("/doctors/appointments", protect, doctorOnly, getDoctorAppointments);
+
+route.put(
+  "/doctors/appointments/:id/complete",
+  protect,
+  doctorOnly,
+  completeDoctorAppointment,
+);
 
 route.get("/doctors/:id", getDoctorById);
 

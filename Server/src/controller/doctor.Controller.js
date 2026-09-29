@@ -2,7 +2,11 @@ import Doctor from "../model/doctor.Model.js";
 import User from "../model/auth.Model.js";
 import bcrypt from "bcrypt";
 import Appointment from "../model/appointment.Model.js";
+
+// =====================================================
 // GET ALL DOCTORS
+// =====================================================
+
 export const getDoctors = async (req, res) => {
   try {
     const { search, department } = req.query;
@@ -36,7 +40,10 @@ export const getDoctors = async (req, res) => {
   }
 };
 
+// =====================================================
 // GET DOCTOR BY ID
+// =====================================================
+
 export const getDoctorById = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id).populate(
@@ -61,11 +68,18 @@ export const getDoctorById = async (req, res) => {
   }
 };
 
+// =====================================================
 // CREATE DOCTOR
+// =====================================================
+
 export const createDoctor = async (req, res) => {
   try {
-    const { name, email, password, department, experience, image, about } =
+    const { name, email, department, experience, price, image, about } =
       req.body;
+
+    // =================================================
+    // VALIDATION
+    // =================================================
 
     if (!name || !name.trim()) {
       return res.status(400).json({
@@ -79,33 +93,51 @@ export const createDoctor = async (req, res) => {
       });
     }
 
-    if (!password || password.length < 6) {
-      return res.status(400).json({
-        message: "Password must be at least 6 characters",
-      });
-    }
-
     if (!department || !department.trim()) {
       return res.status(400).json({
         message: "Department is required",
       });
     }
 
-    if (experience === undefined || experience === null) {
+    if (experience === undefined || experience === null || experience === "") {
       return res.status(400).json({
         message: "Experience is required",
       });
     }
 
+    // =================================================
+    // PRICE VALIDATION
+    // =================================================
+
+    if (price === undefined || price === null || price === "") {
+      return res.status(400).json({
+        message: "Price is required",
+      });
+    }
+
+    if (Number(price) < 20 || Number(price) > 50) {
+      return res.status(400).json({
+        message: "Doctor price must be between 20 and 50",
+      });
+    }
+
+    // =================================================
+    // EMAIL VALIDATION
+    // =================================================
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       return res.status(400).json({
         message: "Please enter a valid email",
       });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    // =================================================
+    // CHECK EMAIL
+    // =================================================
 
     const existingUser = await User.findOne({
       email: normalizedEmail,
@@ -117,7 +149,17 @@ export const createDoctor = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // =================================================
+    // DEFAULT DOCTOR PASSWORD
+    // =================================================
+
+    const DEFAULT_DOCTOR_PASSWORD = "Doctor123";
+
+    const hashedPassword = await bcrypt.hash(DEFAULT_DOCTOR_PASSWORD, 10);
+
+    // =================================================
+    // CREATE USER ACCOUNT
+    // =================================================
 
     const user = await User.create({
       name: name.trim(),
@@ -126,15 +168,24 @@ export const createDoctor = async (req, res) => {
       role: "doctor",
     });
 
+    // =================================================
+    // CREATE DOCTOR
+    // =================================================
+
     try {
       const doctor = await Doctor.create({
         user: user._id,
         name: name.trim(),
         department: department.trim(),
-        experience,
+        experience: Number(experience),
+        price: Number(price),
         image,
         about,
       });
+
+      // =================================================
+      // POPULATE USER
+      // =================================================
 
       const populatedDoctor = await Doctor.findById(doctor._id).populate(
         "user",
@@ -143,10 +194,19 @@ export const createDoctor = async (req, res) => {
 
       return res.status(201).json({
         message: "Doctor created successfully",
+
         doctor: populatedDoctor,
+
+        login: {
+          email: normalizedEmail,
+          password: DEFAULT_DOCTOR_PASSWORD,
+        },
       });
     } catch (doctorError) {
+      // If creating the doctor fails,
+      // delete the user account that was created
       await User.findByIdAndDelete(user._id);
+
       throw doctorError;
     }
   } catch (error) {
@@ -159,13 +219,28 @@ export const createDoctor = async (req, res) => {
   }
 };
 
+// =====================================================
 // UPDATE DOCTOR
+// =====================================================
+
 export const updateDoctor = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { name, email, password, department, experience, image, about } =
-      req.body;
+    const {
+      name,
+      email,
+      password,
+      department,
+      experience,
+      price,
+      image,
+      about,
+    } = req.body;
+
+    // =================================================
+    // FIND DOCTOR
+    // =================================================
 
     const doctor = await Doctor.findById(id);
 
@@ -175,18 +250,54 @@ export const updateDoctor = async (req, res) => {
       });
     }
 
+    // =================================================
+    // UPDATE DOCTOR DATA
+    // =================================================
+
     const updateDoctorData = {};
 
     if (name !== undefined) {
+      if (!name.trim()) {
+        return res.status(400).json({
+          message: "Doctor name cannot be empty",
+        });
+      }
+
       updateDoctorData.name = name.trim();
     }
 
     if (department !== undefined) {
+      if (!department.trim()) {
+        return res.status(400).json({
+          message: "Department cannot be empty",
+        });
+      }
+
       updateDoctorData.department = department.trim();
     }
 
     if (experience !== undefined) {
-      updateDoctorData.experience = experience;
+      if (Number(experience) < 0) {
+        return res.status(400).json({
+          message: "Experience cannot be negative",
+        });
+      }
+
+      updateDoctorData.experience = Number(experience);
+    }
+
+    // =================================================
+    // UPDATE PRICE
+    // =================================================
+
+    if (price !== undefined) {
+      if (Number(price) < 20 || Number(price) > 50) {
+        return res.status(400).json({
+          message: "Doctor price must be between 20 and 50",
+        });
+      }
+
+      updateDoctorData.price = Number(price);
     }
 
     if (image !== undefined) {
@@ -197,20 +308,44 @@ export const updateDoctor = async (req, res) => {
       updateDoctorData.about = about;
     }
 
+    // =================================================
+    // UPDATE DOCTOR
+    // =================================================
+
     const updatedDoctor = await Doctor.findByIdAndUpdate(id, updateDoctorData, {
       new: true,
       runValidators: true,
     });
 
+    // =================================================
+    // UPDATE DOCTOR USER ACCOUNT
+    // =================================================
+
     if (doctor.user) {
       const updateUserData = {};
+
+      // -------------------------
+      // Update name
+      // -------------------------
 
       if (name !== undefined) {
         updateUserData.name = name.trim();
       }
 
+      // -------------------------
+      // Update email
+      // -------------------------
+
       if (email !== undefined) {
         const normalizedEmail = email.toLowerCase().trim();
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(normalizedEmail)) {
+          return res.status(400).json({
+            message: "Please enter a valid email",
+          });
+        }
 
         const existingUser = await User.findOne({
           email: normalizedEmail,
@@ -226,6 +361,10 @@ export const updateDoctor = async (req, res) => {
         updateUserData.email = normalizedEmail;
       }
 
+      // -------------------------
+      // Update password
+      // -------------------------
+
       if (password && password.trim() !== "") {
         if (password.length < 6) {
           return res.status(400).json({
@@ -236,6 +375,10 @@ export const updateDoctor = async (req, res) => {
         updateUserData.hash_password = await bcrypt.hash(password, 10);
       }
 
+      // -------------------------
+      // Save User
+      // -------------------------
+
       if (Object.keys(updateUserData).length > 0) {
         await User.findByIdAndUpdate(doctor.user, updateUserData, {
           new: true,
@@ -243,6 +386,10 @@ export const updateDoctor = async (req, res) => {
         });
       }
     }
+
+    // =================================================
+    // GET FINAL DOCTOR
+    // =================================================
 
     const finalDoctor = await Doctor.findById(updatedDoctor._id).populate(
       "user",
@@ -263,7 +410,10 @@ export const updateDoctor = async (req, res) => {
   }
 };
 
+// =====================================================
 // DELETE DOCTOR
+// =====================================================
+
 export const deleteDoctor = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id);
@@ -274,10 +424,12 @@ export const deleteDoctor = async (req, res) => {
       });
     }
 
+    // Delete linked User account
     if (doctor.user) {
       await User.findByIdAndDelete(doctor.user);
     }
 
+    // Delete Doctor
     await Doctor.findByIdAndDelete(req.params.id);
 
     return res.status(200).json({
@@ -292,10 +444,29 @@ export const deleteDoctor = async (req, res) => {
     });
   }
 };
+
+// =====================================================
+// GET DOCTOR APPOINTMENTS
+// =====================================================
+
 export const getDoctorAppointments = async (req, res) => {
   try {
+    // =================================================
+    // CHECK AUTHENTICATION
+    // =================================================
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    // =================================================
+    // FIND DOCTOR LINKED TO USER
+    // =================================================
+
     const doctor = await Doctor.findOne({
-      user: req.user._id,
+      user: req.user.id,
     });
 
     if (!doctor) {
@@ -303,6 +474,10 @@ export const getDoctorAppointments = async (req, res) => {
         message: "Doctor profile not found",
       });
     }
+
+    // =================================================
+    // GET APPOINTMENTS
+    // =================================================
 
     const appointments = await Appointment.find({
       doctor: doctor._id,
@@ -321,6 +496,110 @@ export const getDoctorAppointments = async (req, res) => {
     });
   } catch (error) {
     console.error("GET DOCTOR APPOINTMENTS ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+// =====================================================
+// COMPLETE DOCTOR APPOINTMENT
+// =====================================================
+
+export const completeDoctorAppointment = async (req, res) => {
+  try {
+    // =================================================
+    // CHECK AUTHENTICATION
+    // =================================================
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Appointment ID is required",
+      });
+    }
+
+    // =================================================
+    // FIND DOCTOR
+    // =================================================
+
+    const doctor = await Doctor.findOne({
+      user: req.user.id,
+    });
+
+    if (!doctor) {
+      return res.status(404).json({
+        message: "Doctor profile not found",
+      });
+    }
+
+    // =================================================
+    // FIND APPOINTMENT
+    // =================================================
+
+    const appointment = await Appointment.findOne({
+      _id: id,
+      doctor: doctor._id,
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        message: "Appointment not found or does not belong to this doctor",
+      });
+    }
+
+    // =================================================
+    // CHECK CANCELLED
+    // =================================================
+
+    if (appointment.status === "Cancelled") {
+      return res.status(400).json({
+        message: "Cancelled appointment cannot be completed",
+      });
+    }
+
+    // =================================================
+    // CHECK ALREADY COMPLETED
+    // =================================================
+
+    if (appointment.status === "Completed") {
+      return res.status(400).json({
+        message: "Appointment is already completed",
+      });
+    }
+
+    // =================================================
+    // COMPLETE APPOINTMENT
+    // =================================================
+
+    appointment.status = "Completed";
+
+    await appointment.save();
+
+    // =================================================
+    // RETURN UPDATED APPOINTMENT
+    // =================================================
+
+    const updatedAppointment = await Appointment.findById(appointment._id)
+      .populate("user", "-hash_password")
+      .populate("service")
+      .populate("doctor");
+
+    return res.status(200).json({
+      message: "Appointment completed successfully",
+      appointment: updatedAppointment,
+    });
+  } catch (error) {
+    console.error("COMPLETE DOCTOR APPOINTMENT ERROR:", error);
 
     return res.status(500).json({
       message: "Internal server error",

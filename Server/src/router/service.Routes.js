@@ -1,6 +1,5 @@
 import express from "express";
-import Service from "../model/service.Model.js";
-
+import Service from "../model/Service.Model.js";
 const router = express.Router();
 
 // ================= ADD SERVICE =================

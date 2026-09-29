@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Alert,
   Divider,
+  Button,
 } from "@mui/material";
 
 import {
@@ -14,7 +15,6 @@ import {
   CheckCircle,
   Cancel,
   EventAvailable,
-  Person,
   Email,
   AccessTime,
   MedicalServices,
@@ -27,6 +27,7 @@ const DoctorDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [completingId, setCompletingId] = useState(null);
 
   // =====================================================
   // GET DOCTOR APPOINTMENTS
@@ -64,6 +65,56 @@ const DoctorDashboard = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  // =====================================================
+  // COMPLETE APPOINTMENT
+  // =====================================================
+
+  const completeAppointment = async (appointmentId) => {
+    try {
+      setError("");
+      setCompletingId(appointmentId);
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("You are not logged in.");
+        return;
+      }
+
+      const response = await axios.put(
+        `http://localhost:3000/api/doctors/appointments/${appointmentId}/complete`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log("COMPLETE APPOINTMENT:", response.data);
+
+      // Update appointment immediately
+      setAppointments((prevAppointments) =>
+        prevAppointments.map((appointment) =>
+          appointment._id === appointmentId
+            ? {
+                ...appointment,
+                status: "Completed",
+              }
+            : appointment,
+        ),
+      );
+    } catch (error) {
+      console.error("COMPLETE APPOINTMENT ERROR:", error);
+
+      setError(
+        error.response?.data?.message || "Failed to complete appointment",
+      );
+    } finally {
+      setCompletingId(null);
     }
   };
 
@@ -257,7 +308,7 @@ const DoctorDashboard = () => {
   // ERROR
   // =====================================================
 
-  if (error) {
+  if (error && appointments.length === 0) {
     return (
       <Box
         sx={{
@@ -424,6 +475,22 @@ const DoctorDashboard = () => {
       </Box>
 
       {/* ================================================= */}
+      {/* ERROR MESSAGE */}
+      {/* ================================================= */}
+
+      {error && appointments.length > 0 && (
+        <Alert
+          severity="error"
+          sx={{
+            mb: 3,
+            borderRadius: 3,
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {/* ================================================= */}
       {/* APPOINTMENTS */}
       {/* ================================================= */}
 
@@ -529,24 +596,29 @@ const DoctorDashboard = () => {
               >
                 <Box component="thead">
                   <Box component="tr">
-                    {["Patient", "Email", "Date", "Time", "Status"].map(
-                      (title) => (
-                        <Box
-                          component="th"
-                          key={title}
-                          sx={{
-                            textAlign: "left",
-                            p: 2,
-                            color: "text.secondary",
-                            fontSize: 14,
-                            fontWeight: 600,
-                            borderBottom: "1px solid #e5e7eb",
-                          }}
-                        >
-                          {title}
-                        </Box>
-                      ),
-                    )}
+                    {[
+                      "Patient",
+                      "Email",
+                      "Date",
+                      "Time",
+                      "Status",
+                      "Action",
+                    ].map((title) => (
+                      <Box
+                        component="th"
+                        key={title}
+                        sx={{
+                          textAlign: "left",
+                          p: 2,
+                          color: "text.secondary",
+                          fontSize: 14,
+                          fontWeight: 600,
+                          borderBottom: "1px solid #e5e7eb",
+                        }}
+                      >
+                        {title}
+                      </Box>
+                    ))}
                   </Box>
                 </Box>
 
@@ -697,6 +769,63 @@ const DoctorDashboard = () => {
                           size="small"
                         />
                       </Box>
+
+                      {/* ACTION */}
+
+                      <Box
+                        component="td"
+                        sx={{
+                          p: 2,
+                          borderBottom: "1px solid #f0f0f0",
+                        }}
+                      >
+                        {appointment.status === "Booked" && (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<CheckCircle />}
+                            disabled={completingId === appointment._id}
+                            onClick={() => completeAppointment(appointment._id)}
+                            sx={{
+                              backgroundColor: "#12372A",
+                              textTransform: "none",
+                              borderRadius: 2,
+                              fontFamily: "Poppins",
+                              "&:hover": {
+                                backgroundColor: "#0d281e",
+                              },
+                            }}
+                          >
+                            {completingId === appointment._id
+                              ? "Completing..."
+                              : "Complete"}
+                          </Button>
+                        )}
+
+                        {appointment.status === "Completed" && (
+                          <Typography
+                            sx={{
+                              color: "#2e7d32",
+                              fontSize: 14,
+                              fontWeight: 600,
+                            }}
+                          >
+                            Completed
+                          </Typography>
+                        )}
+
+                        {appointment.status === "Cancelled" && (
+                          <Typography
+                            sx={{
+                              color: "#d32f2f",
+                              fontSize: 14,
+                              fontWeight: 600,
+                            }}
+                          >
+                            Cancelled
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
                   ))}
                 </Box>
@@ -826,6 +955,58 @@ const DoctorDashboard = () => {
                       size="small"
                     />
                   </Box>
+
+                  {/* ACTION */}
+
+                  {appointment.status === "Booked" && (
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<CheckCircle />}
+                      disabled={completingId === appointment._id}
+                      onClick={() => completeAppointment(appointment._id)}
+                      sx={{
+                        mt: 2,
+                        backgroundColor: "#12372A",
+                        textTransform: "none",
+                        borderRadius: 2,
+                        fontFamily: "Poppins",
+                        "&:hover": {
+                          backgroundColor: "#0d281e",
+                        },
+                      }}
+                    >
+                      {completingId === appointment._id
+                        ? "Completing..."
+                        : "Complete Appointment"}
+                    </Button>
+                  )}
+
+                  {appointment.status === "Completed" && (
+                    <Typography
+                      sx={{
+                        mt: 2,
+                        color: "#2e7d32",
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      Appointment Completed
+                    </Typography>
+                  )}
+
+                  {appointment.status === "Cancelled" && (
+                    <Typography
+                      sx={{
+                        mt: 2,
+                        color: "#d32f2f",
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      Appointment Cancelled
+                    </Typography>
+                  )}
                 </Paper>
               ))}
             </Box>

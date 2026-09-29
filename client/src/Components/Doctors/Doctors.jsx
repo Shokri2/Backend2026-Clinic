@@ -341,6 +341,20 @@ export default function Doctors() {
                           "Experienced medical professional providing quality healthcare."}
                       </Typography>
 
+                      {/* ================= PRICE ================= */}
+
+                      <Typography
+                        sx={{
+                          mt: 1.5,
+                          color: "#16704f",
+                          fontWeight: 800,
+                          fontSize: "18px",
+                          fontFamily: "Poppins, sans-serif",
+                        }}
+                      >
+                        ${doctor.price} / Appointment
+                      </Typography>
+
                       {/* ================= BOOK BUTTON ================= */}
 
                       <Button

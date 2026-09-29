@@ -1,6 +1,12 @@
 import User from "../model/auth.Model.js";
+import Doctor from "../model/doctor.Model.js";
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+
+// =====================================================
+// REGISTER
+// =====================================================
 
 export const register = async (req, res) => {
   try {
@@ -50,6 +56,7 @@ export const register = async (req, res) => {
 
     const hash_password = await bcrypt.hash(password, 10);
 
+    // التسجيل العادي يبقى User
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
@@ -59,6 +66,7 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       message: "created account",
+
       user: {
         id: user._id,
         name: user.name,
@@ -75,16 +83,22 @@ export const register = async (req, res) => {
   }
 };
 
+// =====================================================
+// LOGIN
+// =====================================================
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validation
     if (!email || !password) {
       return res.status(400).json({
         message: "faill all requierd field",
       });
     }
 
+    // Find User
     const isExist = await User.findOne({
       email: email.toLowerCase().trim(),
     });
@@ -95,6 +109,7 @@ export const login = async (req, res) => {
       });
     }
 
+    // Check Password
     const ismatch = await bcrypt.compare(password, isExist.hash_password);
 
     if (!ismatch) {
@@ -103,6 +118,30 @@ export const login = async (req, res) => {
       });
     }
 
+    // =================================================
+    // GET DOCTOR ID
+    // =================================================
+
+    let doctorId = null;
+
+    if (isExist.role === "doctor") {
+      const doctor = await Doctor.findOne({
+        user: isExist._id,
+      });
+
+      if (!doctor) {
+        return res.status(404).json({
+          message: "Doctor profile not found",
+        });
+      }
+
+      doctorId = doctor._id;
+    }
+
+    // =================================================
+    // JWT
+    // =================================================
+
     const token = jwt.sign(
       {
         name: isExist.name,
@@ -110,22 +149,36 @@ export const login = async (req, res) => {
         role: isExist.role,
         createdAT: isExist.createdAT,
         id: isExist._id,
+
+        // Doctor ID داخل التوكن
+        doctorId: doctorId,
       },
+
       process.env.JWT_SECRET,
+
       {
         expiresIn: "30m",
       },
     );
 
+    // =================================================
+    // RESPONSE
+    // =================================================
+
     return res.status(200).json({
       message: "login succsesful",
+
       user: {
         name: isExist.name,
         email: isExist.email,
         role: isExist.role,
         createdAT: isExist.createdAT,
         id: isExist._id,
+
+        // للـDoctor فقط
+        doctorId: doctorId,
       },
+
       token,
     });
   } catch (error) {

@@ -23,6 +23,13 @@ const doctorSchema = new mongoose.Schema(
       required: true,
     },
 
+    price: {
+      type: Number,
+      required: true,
+      min: 20,
+      max: 50,
+    },
+
     image: {
       type: String,
     },

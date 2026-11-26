@@ -15,7 +15,7 @@ import LandingPage from "./Pages/LandingPage/LandingPage.jsx";
 import Home from "./Pages/Home/Home.jsx";
 import About from "./Components/About/About.jsx";
 import Doctors from "./Components/Doctors/Doctors.jsx";
-import Services from "./Components/service/Services.jsx";
+import Services from "./Components/Service/Services.jsx";
 
 // Booking
 import Booking from "./Components/Service/Booking/Booking.jsx";

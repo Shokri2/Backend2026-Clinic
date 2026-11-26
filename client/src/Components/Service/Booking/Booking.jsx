@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../../config";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
@@ -70,7 +71,7 @@ export default function Booking() {
           console.log("Loading service:", serviceId);
 
           const response = await axios.get(
-            "http://localhost:3000/api/services",
+            `${SERVER_URL}/api/services`,
           );
 
           const selectedService = response.data.find(
@@ -103,7 +104,7 @@ export default function Booking() {
           console.log("Loading doctor:", doctorId);
 
           const response = await axios.get(
-            `http://localhost:3000/api/doctors/${doctorId}`,
+            `${SERVER_URL}/api/doctors/${doctorId}`,
           );
 
           console.log("Selected doctor:", response.data);
@@ -246,7 +247,7 @@ export default function Booking() {
       // ===================================================
 
       const response = await axios.post(
-        "http://localhost:3000/api/appointments",
+        `${SERVER_URL}/api/appointments`,
         appointmentData,
         {
           headers: {

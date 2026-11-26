@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../config";
 import {
   Box,
   Typography,
@@ -127,7 +128,7 @@ export default function UserDashboard() {
         };
 
         const res = await axios.get(
-          `http://localhost:3000/api/appointments/user/${userId}`,
+          `${SERVER_URL}/api/appointments/user/${userId}`,
           config,
         );
 

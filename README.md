@@ -2,6 +2,9 @@
 
 A full-stack clinic web app where patients book appointments online, doctors manage their schedule, and admins run the whole clinic from one dashboard.
 
+**Live demo:** https://shokri-clinic.onrender.com  
+_Hosted on Render's free tier, so the backend sleeps when idle: the first load can take up to a minute._
+
 ![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
 ![Express](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)

@@ -21,8 +21,8 @@ const app = express();
 // Connect MongoDB
 connectDB();
 
-// Serve uploaded files
-app.use("/uploads", express.static("uploads"));
+// Serve uploaded files (folder name is case-sensitive on Linux)
+app.use("/uploads", express.static("Uploads"));
 
 // Parse JSON
 app.use(bodyParser.json());
@@ -30,7 +30,9 @@ app.use(bodyParser.json());
 // CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (process.env.CLIENT_URL || "http://localhost:5173")
+      .split(",")
+      .map((url) => url.trim()),
     credentials: true,
     methods: ["PUT", "POST", "GET", "DELETE"],
   }),

@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../config";
 import {
   Box,
   Paper,
@@ -46,7 +47,7 @@ const DoctorDashboard = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:3000/api/doctors/appointments",
+        `${SERVER_URL}/api/doctors/appointments`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -85,7 +86,7 @@ const DoctorDashboard = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:3000/api/doctors/appointments/${appointmentId}/complete`,
+        `${SERVER_URL}/api/doctors/appointments/${appointmentId}/complete`,
         {},
         {
           headers: {

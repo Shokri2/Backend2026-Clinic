@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../config";
 import {
   Box,
   Typography,
@@ -67,15 +68,15 @@ export default function AdminDashboard() {
       setLoading(true);
 
       // Doctors
-      const doctorsRes = await axios.get("http://localhost:3000/api/doctors");
+      const doctorsRes = await axios.get(`${SERVER_URL}/api/doctors`);
 
       // Services
-      const servicesRes = await axios.get("http://localhost:3000/api/services");
+      const servicesRes = await axios.get(`${SERVER_URL}/api/services`);
 
       // Users
       const token = localStorage.getItem("token");
 
-      const usersRes = await axios.get("http://localhost:3000/api/all-users", {
+      const usersRes = await axios.get(`${SERVER_URL}/api/all-users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -133,7 +134,7 @@ export default function AdminDashboard() {
         return;
       }
 
-      await axios.post("http://localhost:3000/api/doctors", {
+      await axios.post(`${SERVER_URL}/api/doctors`, {
         name: doctorForm.name,
         department: doctorForm.department,
         experience: Number(doctorForm.experience) || 0,
@@ -180,7 +181,7 @@ export default function AdminDashboard() {
         return;
       }
 
-      await axios.post("http://localhost:3000/api/services", {
+      await axios.post(`${SERVER_URL}/api/services`, {
         title: serviceForm.title,
         description: serviceForm.description,
         image: serviceForm.image,

@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../../../config";
 import {
   Box,
   Button,
@@ -42,7 +43,7 @@ export default function ManageDoctors() {
     try {
       setLoading(true);
 
-      const res = await axios.get("http://localhost:3000/api/doctors");
+      const res = await axios.get(`${SERVER_URL}/api/doctors`);
 
       setDoctors(res.data);
     } catch (error) {
@@ -171,7 +172,7 @@ export default function ManageDoctors() {
       // =========================
       if (editingDoctor) {
         const response = await axios.put(
-          `http://localhost:3000/api/doctors/${editingDoctor._id}`,
+          `${SERVER_URL}/api/doctors/${editingDoctor._id}`,
           dataToSend,
         );
 
@@ -185,7 +186,7 @@ export default function ManageDoctors() {
       // =========================
       else {
         const response = await axios.post(
-          "http://localhost:3000/api/doctors",
+          `${SERVER_URL}/api/doctors`,
           dataToSend,
         );
 
@@ -232,7 +233,7 @@ export default function ManageDoctors() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:3000/api/doctors/${id}`);
+      await axios.delete(`${SERVER_URL}/api/doctors/${id}`);
 
       toast.success("Doctor deleted successfully");
 

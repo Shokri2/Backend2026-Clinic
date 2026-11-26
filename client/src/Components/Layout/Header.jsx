@@ -15,7 +15,7 @@ import logo from "../../assets/loog.png";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 
-import { useAuth } from "../../Hooks/UseAuth";
+import { useAuth } from "../../Hooks/useAuth";
 import { UserContext } from "../../Context/UserContext";
 
 export default function Header() {

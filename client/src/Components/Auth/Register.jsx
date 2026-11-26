@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 
 import { useState } from "react";
-import { useAuth } from "../../Hooks/UseAuth";
+import { useAuth } from "../../Hooks/useAuth";
 import registerBg from "../../assets/registerBg.png";
 
 export default function Register() {

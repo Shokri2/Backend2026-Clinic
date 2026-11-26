@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../../../config";
 
 import {
   Box,
@@ -38,7 +39,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 export default function ManageUsers() {
-  const API_URL = "http://localhost:3000";
+  const API_URL = SERVER_URL;
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);

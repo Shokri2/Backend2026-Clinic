@@ -1,4 +1,4 @@
-# 🏥 Clinic Management System
+# Clinic Management System
 
 A full-stack clinic web app where patients book appointments online, doctors manage their schedule, and admins run the whole clinic from one dashboard.
 

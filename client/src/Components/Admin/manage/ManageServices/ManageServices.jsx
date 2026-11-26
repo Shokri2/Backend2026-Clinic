@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../../../config";
 import {
   Box,
   Button,
@@ -36,7 +37,7 @@ export default function ManageServices() {
   // BACKEND URL
   // =====================================================
 
-  const API_URL = "http://localhost:3000";
+  const API_URL = SERVER_URL;
 
   // =====================================================
   // GET SERVICES
@@ -76,17 +77,17 @@ const getImageUrl = (image) => {
 
   // إذا قاعدة البيانات تخزن /uploads/...
   if (image.startsWith("/uploads/")) {
-    return `http://localhost:3000${image}`;
+    return `${SERVER_URL}${image}`;
   }
 
   // إذا قاعدة البيانات تخزن uploads/...
   if (image.startsWith("uploads/")) {
-    return `http://localhost:3000/${image}`;
+    return `${SERVER_URL}/${image}`;
   }
 
   // إذا قاعدة البيانات تخزن اسم الملف فقط
   // مثال: Nutrition Consultation.png
-  return `http://localhost:3000/uploads/${encodeURIComponent(image)}`;
+  return `${SERVER_URL}/uploads/${encodeURIComponent(image)}`;
 };
   // =====================================================
   // IMAGE ERROR

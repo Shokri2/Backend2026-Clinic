@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../config";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +26,7 @@ export default function Services() {
   useEffect(() => {
     const getServices = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/services");
+        const res = await axios.get(`${SERVER_URL}/api/services`);
 
         setServices(res.data);
       } catch (error) {
@@ -153,7 +154,7 @@ export default function Services() {
                 <CardMedia
                   component="img"
                   height="200"
-                  image={`http://localhost:3000/uploads/${service.image}`}
+                  image={`${SERVER_URL}/uploads/${service.image}`}
                   alt={service.title}
                   sx={{
                     objectFit: "cover",

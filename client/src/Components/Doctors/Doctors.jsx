@@ -1,3 +1,4 @@
+import { SERVER_URL } from "../../config";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +34,7 @@ export default function Doctors() {
   const fetchDoctors = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/doctors?search=${search}&department=${department}`,
+        `${SERVER_URL}/api/doctors?search=${search}&department=${department}`,
       );
 
       setDoctors(response.data);
